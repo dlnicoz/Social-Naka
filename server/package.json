@@ -3,14 +3,17 @@
   "type": "module",
   "version": "1.0.0",
   "main": "server.js",
-  "author": "Tox",
+  "author": "dlnicoz",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-session": "^1.18.1",
     "mongodb": "^5.7.0",
-    "mongoose": "^7.3.4"
-  },
-  "devDependencies": {}
+    "mongoose": "^7.3.4",
+    "nodemon": "^3.1.7",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
+  }
 }
