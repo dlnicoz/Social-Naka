@@ -1,5 +1,6 @@
-const express = require('express');
-const passport = require('passport');
+import express from 'express';
+import passport from 'passport';
+
 const router = express.Router();
 
 // Google OAuth login route
@@ -22,4 +23,4 @@ router.get('/auth/logout', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

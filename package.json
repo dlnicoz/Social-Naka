@@ -1,24 +1,28 @@
 {
   "name": "social-naka",
-  "description": "This is a quick start project template that combines the power of Vite.js and the MERN (MongoDB, Express, React, Node.js) stack. It provides a solid foundation for building modern web applications with a fast development experience.",
+  "description": "MERN stack project with Vite.js for fast frontend development.",
   "author": "dlnicoz",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "dev": "concurrently \"cd server && nodemon server.mjs\" \"cd client && npm run dev\"",
+    "dev-client": "concurrently \"cd client && npm run dev\" \"cd client && npm run sass\""
+  },
   "dependencies": {
+    "npx": "^10.2.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "mongoose": "^8.7.1",
-    "npx": "^3.0.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.18.1",
+    "mongodb": "^5.7.0",
+    "mongoose": "^7.3.4",
+    "nodemon": "^3.1.7",
+    "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",
     "prettier": "^3.0.0"
-  },
-  "scripts": {
-    "dev": "concurrently \"cd server && nodemon server.mjs\" \"cd client && npm run dev\" \"cd client && npm run sass\"",
-    "dev-client": "concurrently \"cd client && npm run dev\" \"cd client && npm run sass\""
   }
 }

@@ -2,18 +2,25 @@
   "name": "server",
   "type": "module",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "server.mjs",
   "author": "dlnicoz",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-session": "^1.18.1",
-    "mongodb": "^5.7.0",
-    "mongoose": "^7.3.4",
+    "mongodb": "^6.9.0",
+    "mongoose": "^8.7.1",
     "nodemon": "^3.1.7",
     "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "punycode": "^2.3.1"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "nodemon server.mjs"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
   }
 }
