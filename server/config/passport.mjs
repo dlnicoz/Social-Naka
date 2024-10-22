@@ -27,15 +27,14 @@ passport.use(new GoogleStrategy({
   }
 }));
 
-// Updated deserializeUser using async/await
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user.id);  // Store the user ID in the session
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id);  // Use async/await instead of callbacks
-    done(null, user);
+    const user = await User.findById(id);  // Retrieve the user from the database
+    done(null, user);  // Attach the user to req.user
   } catch (err) {
     done(err, false);
   }

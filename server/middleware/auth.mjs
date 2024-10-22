@@ -1,7 +1,7 @@
 export const ensureAuth = (req, res, next) => {
   if (req.isAuthenticated()) {
-    return next();  // User is authenticated, proceed to the next middleware or route handler
+    return next();  // User is authenticated, proceed to the next middleware/route
   } else {
-    res.status(401).json({ message: 'Unauthorized' });  // User not authenticated
+    res.status(401).json({ message: 'Unauthorized' });  // User is not authenticated
   }
 };

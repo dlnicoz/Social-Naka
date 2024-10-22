@@ -20,15 +20,18 @@ mongoose.connect(process.env.MONGO_URI)
 app.use(cors());
 app.use(express.json());
 
-// Express session middleware
 import MongoStore from 'connect-mongo';
 
+// Express session middleware
 app.use(session({
-  secret: 'socialnakaunicorn',
+  secret: 'socialnakawillbecomeunicorn',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),  // Store sessions in MongoDB
-  cookie: { secure: false, maxAge: 60000 * 60 }
+  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),  // Use MongoDB to store sessions
+  cookie: {
+    secure: false,  // Set to true if using HTTPS
+    maxAge: 60000 * 60  // 1-hour session expiration
+  }
 }));
 
 // Passport middleware
@@ -36,14 +39,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-
 // Routes
 import authRoutes from './routes/auth.mjs';
 app.use(authRoutes);
 
-// Routes
 import socialCardRoutes from './routes/socialCard.mjs';
-app.use('/api/socialcards', socialCardRoutes);
+app.use('/api/socialcards', socialCardRoutes);  // This registers the social card routes with /api/socialcards
 
 // Add a root route handler for "/"
 app.get('/', (req, res) => {
@@ -57,7 +58,6 @@ app.get('/auth/check', (req, res) => {
     res.status(401).json({ message: 'Not authenticated' });
   }
 });
-
 
 // Start the server
 const PORT = process.env.PORT || 5000;
