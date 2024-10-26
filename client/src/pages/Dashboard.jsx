@@ -1,35 +1,38 @@
 import { useEffect, useState } from 'react';
-import SocialCard from '../components/SocialCard';
 import api from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import Loader from '../components/Loader';
 
 const Dashboard = () => {
-  const [cards, setCards] = useState([]);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCards = async () => {
+    const checkAuth = async () => {
       try {
-        const response = await api.get('/socialcards');
-        setCards(response.data);
+        const response = await api.get('/auth/check');
+        if (response.data.user) {
+          setUser(response.data.user);  // Set the authenticated user data
+        } else {
+          navigate('/login');  // Redirect to login if not authenticated
+        }
       } catch (error) {
-        console.error(error);
+        console.error('Error checking authentication:', error);
+        navigate('/login');  // Redirect to login if there's an error
       } finally {
         setLoading(false);
       }
     };
-    fetchCards();
-  }, []);
+    checkAuth();
+  }, [navigate]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loader />;
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-4">Your Social Cards</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cards.map((card) => (
-          <SocialCard key={card._id} card={card} />
-        ))}
-      </div>
+      <h1 className="text-2xl font-bold">Welcome, {user?.name}</h1>
+      {/* Display user-specific data here */}
     </div>
   );
 };

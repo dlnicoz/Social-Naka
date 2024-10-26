@@ -7,12 +7,10 @@ const router = express.Router();
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 // Google OAuth callback route
-router.get(
-  '/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+router.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/' }), 
   (req, res) => {
-    // Redirect to dashboard after successful login
-    res.redirect('/dashboard');
+    res.redirect('http://localhost:5173/dashboard');
   }
 );
 
@@ -22,5 +20,6 @@ router.get('/auth/logout', (req, res) => {
     res.redirect('/');
   });
 });
+
 
 export default router;

@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import SocialCardForm from '../components/SocialCardForm';
 import api from '../services/api';
 
 const EditCard = () => {
   const { id } = useParams();
   const [card, setCard] = useState(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,28 +15,28 @@ const EditCard = () => {
         setCard(response.data);
       } catch (error) {
         console.error(error);
-      } finally {
-        setLoading(false);
+        navigate('/dashboard');
       }
     };
-    fetchCard();
-  }, [id]);
 
-  const handleUpdate = async (updatedData) => {
+    fetchCard();
+  }, [id, navigate]);
+
+  const handleSubmit = async (data) => {
     try {
-      await api.put(`/socialcards/${id}`, updatedData);
-      navigate('/');
+      await api.put(`/socialcards/${id}`, data);
+      navigate('/dashboard');
     } catch (error) {
       console.error(error);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (!card) return <div>Loading...</div>;
 
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-2xl font-bold mb-4">Edit Social Card</h1>
-      <SocialCardForm onSubmit={handleUpdate} initialData={card} />
+      <SocialCardForm onSubmit={handleSubmit} initialData={card} />
     </div>
   );
 };

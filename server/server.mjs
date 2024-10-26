@@ -17,7 +17,11 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error(err));
 
 // Middleware
-app.use(cors());
+// Enable CORS for requests coming from frontend (localhost:5173)
+app.use(cors({
+  origin: 'http://localhost:5173',  // Allow requests from frontend
+  credentials: true  // Allow cookies and session credentials
+}));
 app.use(express.json());
 
 import MongoStore from 'connect-mongo';
@@ -30,6 +34,7 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),  // Use MongoDB to store sessions
   cookie: {
     secure: false,  // Set to true if using HTTPS
+    httpOnly: true,
     maxAge: 60000 * 60  // 1-hour session expiration
   }
 }));
@@ -39,9 +44,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-// Routes
 import authRoutes from './routes/auth.mjs';
-app.use(authRoutes);
+app.use('/api', authRoutes);  // routes under /api
+
 
 import socialCardRoutes from './routes/socialCard.mjs';
 app.use('/api/socialcards', socialCardRoutes);  // This registers the social card routes with /api/socialcards
@@ -51,13 +56,15 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Social Card App!');
 });
 
-app.get('/auth/check', (req, res) => {
+// Example route for /auth/check
+app.get('/api/auth/check', (req, res) => {
   if (req.isAuthenticated()) {
     res.json({ user: req.user });
   } else {
-    res.status(401).json({ message: 'Not authenticated' });
+    res.json({ user: null });
   }
 });
+
 
 import rateLimit from 'express-rate-limit';
 
