@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import api from '../services/api';  // Import the api object
+import api from '../services/api';
+import Home from './Home';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import Loader from '../components/Loader';
@@ -31,6 +32,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route
           path="/login"
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
@@ -39,7 +41,7 @@ const App = () => {
           path="/dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
         />
-        <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );

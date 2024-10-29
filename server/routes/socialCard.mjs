@@ -4,13 +4,40 @@ import { ensureAuth } from '../middleware/auth.mjs';
 
 const router = express.Router();
 
-// Create a new social card
+// Fetch all social cards (public)
+router.get('/', async (req, res) => {
+  try {
+    const { page = 1, limit = 10, category, location } = req.query;
+
+    // Build filter query
+    const filter = {};
+    if (category) filter.category = category;
+    if (location) filter.location = location;
+
+    // Paginate and filter results
+    const cards = await SocialCard.find(filter)
+      .populate('userId')
+      .limit(Number(limit))
+      .skip((page - 1) * limit)
+      .exec();
+
+    // Get total count for pagination
+    const count = await SocialCard.countDocuments(filter);
+
+    res.json({
+      cards,
+      totalPages: Math.ceil(count / limit),
+      currentPage: Number(page)
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create a new social card (restricted to authenticated users)
 router.post('/', ensureAuth, async (req, res) => {
   try {
-    // Validate the request body
-    const { error } = socialCardSchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
-
     const { profilePhoto, profession, description, socialLinks, category, location, designCustomization } = req.body;
 
     const newCard = new SocialCard({
@@ -32,19 +59,8 @@ router.post('/', ensureAuth, async (req, res) => {
   }
 });
 
-// Fetch all social cards
-router.get('/', ensureAuth, async (req, res) => {
-  try {
-    const cards = await SocialCard.find().populate('userId');
-    res.json(cards);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Fetch a single social card by ID
-router.get('/:id', ensureAuth, async (req, res) => {
+// Fetch a single social card by ID (public)
+router.get('/:id', async (req, res) => {
   try {
     const card = await SocialCard.findById(req.params.id).populate('userId');
     if (!card) {
@@ -57,14 +73,14 @@ router.get('/:id', ensureAuth, async (req, res) => {
   }
 });
 
-// Update a social card by ID
+// Update a social card by ID (restricted to authenticated users)
 router.put('/:id', ensureAuth, async (req, res) => {
   try {
-    // Validate the request body
-    const { error } = socialCardSchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
-
-    const updatedCard = await SocialCard.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedCard = await SocialCard.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
+      req.body,
+      { new: true }
+    );
     if (!updatedCard) return res.status(404).json({ message: 'Social card not found' });
 
     res.json(updatedCard);
@@ -74,10 +90,10 @@ router.put('/:id', ensureAuth, async (req, res) => {
   }
 });
 
-// Delete a social card by ID
+// Delete a social card by ID (restricted to authenticated users)
 router.delete('/:id', ensureAuth, async (req, res) => {
   try {
-    const deletedCard = await SocialCard.findByIdAndDelete(req.params.id);
+    const deletedCard = await SocialCard.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
     if (!deletedCard) {
       return res.status(404).json({ message: 'Social card not found' });
     }
@@ -87,37 +103,5 @@ router.delete('/:id', ensureAuth, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-// Fetch all social cards with pagination and filtering
-router.get('/', ensureAuth, async (req, res) => {
-  try {
-    const { page = 1, limit = 10, category, location } = req.query;
-
-    // Build filter query
-    const filter = {};
-    if (category) filter.category = category;
-    if (location) filter.location = location;
-
-    // Paginate and filter results
-    const cards = await SocialCard.find(filter)
-      .populate('userId')
-      .limit(limit * 1)  // Convert to number
-      .skip((page - 1) * limit)
-      .exec();
-
-    // Get total count for pagination
-    const count = await SocialCard.countDocuments(filter);
-
-    res.json({
-      cards,
-      totalPages: Math.ceil(count / limit),
-      currentPage: Number(page)
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 
 export default router;
