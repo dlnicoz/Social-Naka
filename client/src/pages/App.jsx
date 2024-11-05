@@ -5,6 +5,7 @@ import Home from './Home';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import Loader from '../components/Loader';
+import { AuthProvider } from '../contexts/AuthContext'; 
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null); // null = loading, true/false = loaded
@@ -30,22 +31,24 @@ const App = () => {
   if (loading) return <Loader />;
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
-        />
-        <Route
-          path="/dashboard"
-          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
-        />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/login"
+              element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
+            />
+            <Route
+              path="/dashboard"
+              element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
+            />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 };
 

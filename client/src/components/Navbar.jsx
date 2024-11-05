@@ -1,30 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import { Layers, LogOut, User, X } from 'lucide-react';
-import { useState } from 'react';
-import api from '../services/api';
-
-const Navbar = ({ isAuthenticated, user }) => {
+import { useAuth } from '../contexts/AuthContext';
+const Navbar = () => {
+  const { user, signInWithGoogle, logout, error, clearError } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
-  const [showDropdown, setShowDropdown] = useState(false);
-
-  const clearError = () => setError(null);
-
-  const handleLogin = () => {
-    window.location.href = 'http://localhost:5000/api/auth/google';
-  };
-
-  const handleLogout = async () => {
-    try {
-      await api.get('/auth/signout');
-      navigate('/');
-      window.location.reload(); // Reset app state
-    } catch (error) {
-      setError('Error logging out');
-      console.error(error);
-    }
-  };
 
   return (
     <nav className="bg-white shadow-sm">
@@ -50,9 +30,9 @@ const Navbar = ({ isAuthenticated, user }) => {
           </div>
 
           <div className="flex items-center space-x-2">
-            {!isAuthenticated ? (
+            {!user ? (
               <button
-                onClick={handleLogin}
+                onClick={signInWithGoogle}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Sign in with Google
@@ -62,7 +42,7 @@ const Navbar = ({ isAuthenticated, user }) => {
                 <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                   <img
                     className="h-8 w-8 rounded-full"
-                    src={user?.profilePhoto || 'https://via.placeholder.com/150'}
+                    src={user.profilePhoto || 'https://via.placeholder.com/150'}
                     alt="User Profile"
                   />
                 </Menu.Button>
@@ -91,7 +71,7 @@ const Navbar = ({ isAuthenticated, user }) => {
                     <Menu.Item>
                       {({ active }) => (
                         <button
-                          onClick={handleLogout}
+                          onClick={logout}
                           className={`${
                             active ? 'bg-gray-100' : ''
                           } flex w-full px-4 py-2 text-sm text-gray-700 items-center`}
