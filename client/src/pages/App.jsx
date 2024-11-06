@@ -33,7 +33,6 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route
@@ -46,7 +45,7 @@ const App = () => {
             />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
-        </div>
+       
       </Router>
     </AuthProvider>
   );

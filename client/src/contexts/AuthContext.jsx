@@ -12,11 +12,11 @@ export function AuthProvider({ children }) {
     // Check session on initial load
     const checkSession = async () => {
       try {
-        const response = await api.get('/auth/check-session');
-        setUser(response.data.user);
+        const response = await api.get('/auth/check');
+        setUser(response.data.user); // Set user if session exists
       } catch (error) {
         console.error('Error checking session:', error);
-        setUser(null);
+        setUser(null); // No session found
       } finally {
         setLoading(false);
       }
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await api.get('/auth/logout');
-      setUser(null);
+      setUser(null); // Set user to null on logout
     } catch (error) {
       setError('Failed to log out. Please try again.');
       console.error('Error logging out:', error);

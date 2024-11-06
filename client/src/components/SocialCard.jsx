@@ -1,138 +1,153 @@
-import { Github, Globe, Instagram, Linkedin, Phone, Twitter, Youtube } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Instagram, Twitter, Phone, Mail, Github, Globe, Linkedin, Youtube } from 'lucide-react';
 
-const SocialCard = ({ user }) => {
+const themes = {
+  default: 'bg-white',
+  minimal: 'bg-neutral-50 shadow-sm',
+  gradient: 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white',
+  dark: 'bg-neutral-900 text-white',
+  light: 'bg-neutral-100',
+  bordered: 'bg-white border-2 border-indigo-500',
+  rounded: 'bg-white rounded-3xl',
+  compact: 'bg-white shadow-sm',
+  elegant: 'bg-gradient-to-br from-neutral-900 to-neutral-800 text-white',
+  vibrant: 'bg-gradient-to-br from-pink-500 to-orange-500 text-white'
+};
+
+const themeStyles = {
+  default: 'hover:shadow-xl',
+  minimal: 'hover:shadow-md',
+  gradient: 'hover:shadow-indigo-500/20',
+  dark: 'hover:shadow-neutral-900/20',
+  light: 'hover:shadow-lg',
+  bordered: 'hover:border-indigo-600',
+  rounded: 'hover:shadow-xl',
+  compact: 'hover:shadow-md',
+  elegant: 'hover:shadow-neutral-900/20',
+  vibrant: 'hover:shadow-pink-500/20'
+};
+
+const SocialCard = ({
+  id,
+  user,
+  featured = false,
+  theme = 'default'
+}) => {
+  const themeClass = themes[theme];
+  const hoverClass = themeStyles[theme];
+  const isDark = ['gradient', 'dark', 'elegant', 'vibrant'].includes(theme);
+
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
-      <div className="flex items-center">
+    <motion.div
+      whileHover={{ y: -5 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`relative overflow-hidden rounded-xl transition-all w-full aspect-[1/1.586] ${themeClass} ${hoverClass} ${
+        featured ? 'ring-2 ring-indigo-500 ring-offset-2' : ''
+      }`}
+    >
+      <Link to={`/profile/${id}`} className="block relative h-1/2">
         <img
-          className="h-16 w-16 rounded-full object-cover"
           src={user.photoURL || 'https://via.placeholder.com/150'}
           alt={user.name}
+          className="w-full h-full object-cover"
         />
-        <div className="ml-4">
-          <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
-          <p className="text-sm text-gray-500">{user.profession}</p>
+        <div className={`absolute inset-0 bg-gradient-to-b ${
+          isDark ? 'from-transparent to-black/50' : 'from-transparent to-black/30'
+        }`} />
+      </Link>
+
+      <div className="p-4 h-1/2">
+        <div className="flex flex-col h-full">
+          <Link to={`/profile/${id}`} className="flex-1">
+            <h3 className={`font-bold text-lg leading-tight ${isDark ? 'text-white' : 'text-neutral-900'}`}>
+              {user.name}
+            </h3>
+            <p className={`text-sm ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
+              {user.profession}
+            </p>
+            <p className={`mt-2 text-sm line-clamp-2 ${isDark ? 'text-neutral-300' : 'text-neutral-500'}`}>
+              {user.description}
+            </p>
+          </Link>
+
+          <div className="mt-3 flex space-x-2">
+            {user.contact?.phone && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => window.open(`tel:${user.contact.phone}`)}
+                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-green-100 text-green-600'} p-1.5`}
+              >
+                <Phone className="h-4 w-4" />
+              </motion.button>
+            )}
+            {user.links?.instagram && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => window.open(user.links.instagram, '_blank')}
+                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-pink-100 text-pink-600'} p-1.5`}
+              >
+                <Instagram className="h-4 w-4" />
+              </motion.button>
+            )}
+            {user.links?.twitter && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => window.open(user.links.twitter, '_blank')}
+                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-blue-100 text-blue-600'} p-1.5`}
+              >
+                <Twitter className="h-4 w-4" />
+              </motion.button>
+            )}
+            {user.links?.website && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => window.open(user.links.website, '_blank')}
+                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-blue-100 text-blue-600'} p-1.5`}
+              >
+                <Globe className="h-4 w-4" />
+              </motion.button>
+            )}
+            {user.links?.github && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => window.open(user.links.github, '_blank')}
+                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-600'} p-1.5`}
+              >
+                <Github className="h-4 w-4" />
+              </motion.button>
+            )}
+            {user.links?.linkedin && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => window.open(user.links.linkedin, '_blank')}
+                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-blue-100 text-blue-600'} p-1.5`}
+              >
+                <Linkedin className="h-4 w-4" />
+              </motion.button>
+            )}
+            {user.links?.youtube && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => window.open(user.links.youtube, '_blank')}
+                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-red-100 text-red-600'} p-1.5`}
+              >
+                <Youtube className="h-4 w-4" />
+              </motion.button>
+            )}
+          </div>
         </div>
       </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {user.category}
-        </span>
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-          {user.serviceType}
-        </span>
-      </div>
-
-      <p className="mt-4 text-gray-600">{user.description}</p>
-
-      <div className="mt-4 flex items-center text-sm text-gray-500">
-        <svg
-          className="mr-1.5 h-5 w-5 flex-shrink-0 text-gray-400"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fillRule="evenodd"
-            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-            clipRule="evenodd"
-          />
-        </svg>
-        {user.location}
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-4">
-        {user.contact?.phone && (
-          <a
-            href={`tel:${user.contact.phone}`}
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-          >
-            <Phone className="h-4 w-4 mr-1" />
-            {user.contact.phone}
-          </a>
-        )}
-        {user.contact?.whatsapp && (
-          <a
-            href={`https://wa.me/${user.contact.whatsapp}`}
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <svg
-              className="h-4 w-4 mr-1"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-            WhatsApp
-          </a>
-        )}
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-3">
-        {user.links?.website && (
-          <a
-            href={user.links.website}
-            className="text-gray-400 hover:text-gray-500"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Globe className="h-5 w-5" />
-          </a>
-        )}
-        {user.links?.github && (
-          <a
-            href={user.links.github}
-            className="text-gray-400 hover:text-gray-500"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Github className="h-5 w-5" />
-          </a>
-        )}
-        {user.links?.linkedin && (
-          <a
-            href={user.links.linkedin}
-            className="text-gray-400 hover:text-gray-500"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Linkedin className="h-5 w-5" />
-          </a>
-        )}
-        {user.links?.twitter && (
-          <a
-            href={user.links.twitter}
-            className="text-gray-400 hover:text-gray-500"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Twitter className="h-5 w-5" />
-          </a>
-        )}
-        {user.links?.instagram && (
-          <a
-            href={user.links.instagram}
-            className="text-gray-400 hover:text-gray-500"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Instagram className="h-5 w-5" />
-          </a>
-        )}
-        {user.links?.youtube && (
-          <a
-            href={user.links.youtube}
-            className="text-gray-400 hover:text-gray-500"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Youtube className="h-5 w-5" />
-          </a>
-        )}
-      </div>
-    </div>
+    </motion.div>
   );
 };
 

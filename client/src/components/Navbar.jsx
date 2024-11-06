@@ -1,13 +1,20 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Menu, Transition } from '@headlessui/react';
-import { Layers, LogOut, User, X } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, User, Menu, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext'; // Adjust the import path
+
 const Navbar = () => {
   const { user, signInWithGoogle, logout, error, clearError } = useAuth();
-  const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-sm">
+    <motion.nav 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-neutral-200"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {error && (
           <div className="relative bg-red-50 p-3">
@@ -21,75 +28,112 @@ const Navbar = () => {
             </div>
           </div>
         )}
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <Layers className="h-8 w-8 text-indigo-600" />
-              <span className="text-xl font-bold text-gray-900">Social Naka</span>
-            </Link>
-          </div>
 
-          <div className="flex items-center space-x-2">
+        <div className="flex justify-between items-center h-16">
+          <Link to="/" className="flex items-center space-x-2">
+            <User className="w-8 h-8 text-indigo-600" />
+            <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              SocialDeck
+            </span>
+          </Link>
+
+          <div className="flex items-center space-x-4">
+            <div className="relative hidden md:block">
+              <input
+                type="text"
+                placeholder="Search profiles..."
+                className="w-64 px-4 py-2 rounded-full bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <Search className="absolute right-3 top-2.5 w-5 h-5 text-neutral-400" />
+            </div>
+            
             {!user ? (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={signInWithGoogle}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="flex items-center space-x-2 px-6 py-2 rounded-full bg-white border-2 border-neutral-200 hover:border-neutral-300 text-neutral-700 font-medium transition-colors"
               >
-                Sign in with Google
-              </button>
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign in with Google</span>
+              </motion.button>
             ) : (
-              <Menu as="div" className="relative ml-3">
-                <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src={user.profilePhoto || 'https://via.placeholder.com/150'}
-                    alt="User Profile"
-                  />
-                </Menu.Button>
-                <Transition
-                  enter="transition ease-out duration-100"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95"
+              <div className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="relative"
                 >
-                  <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <Menu.Item>
-                      {({ active }) => (
-                        <Link
-                          to="/dashboard"
-                          className={`${
-                            active ? 'bg-gray-100' : ''
-                          } flex px-4 py-2 text-sm text-gray-700 items-center`}
-                        >
-                          <User className="mr-2 h-4 w-4" />
-                          Dashboard
-                        </Link>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={logout}
-                          className={`${
-                            active ? 'bg-gray-100' : ''
-                          } flex w-full px-4 py-2 text-sm text-gray-700 items-center`}
-                        >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Sign out
-                        </button>
-                      )}
-                    </Menu.Item>
-                  </Menu.Items>
-                </Transition>
-              </Menu>
+                  <img
+                    src={user.profilePhoto || 'https://via.placeholder.com/150'}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full border-2 border-indigo-500"
+                  />
+                </motion.button>
+
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 border border-neutral-200"
+                    >
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="block px-4 py-2 text-neutral-700 hover:bg-neutral-50"
+                      >
+                        Dashboard
+                      </Link>
+                      <button
+                        onClick={logout}
+                        className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-neutral-50"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
+
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
           </div>
         </div>
+
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden py-4"
+            >
+              <div className="flex flex-col space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search profiles..."
+                    className="w-full px-4 py-2 rounded-full bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <Search className="absolute right-3 top-2.5 w-5 h-5 text-neutral-400" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </nav>
+    </motion.nav>
   );
-};
+}
 
 export default Navbar;
