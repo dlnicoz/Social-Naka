@@ -6,6 +6,7 @@ import Login from './Login';
 import Dashboard from './Dashboard';
 import Loader from '../components/Loader';
 import { AuthProvider } from '../contexts/AuthContext'; 
+import CreateCard from './CreateCard';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null); // null = loading, true/false = loaded
@@ -43,7 +44,12 @@ const App = () => {
               path="/dashboard"
               element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
             />
+             <Route 
+          path="/create" 
+          element={isAuthenticated ? <CreateCard /> : <Navigate to="/login" replace />} 
+        />
             <Route path="*" element={<Navigate to="/" />} />
+            
           </Routes>
        
       </Router>

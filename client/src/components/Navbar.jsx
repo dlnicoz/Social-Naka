@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, User, Menu, LogOut } from 'lucide-react';
+import { Search, User, Menu, LogOut, PlusCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext'; // Adjust the import path
 
 const Navbar = () => {
@@ -58,46 +58,60 @@ const Navbar = () => {
                 <span className="hidden sm:inline">Sign in with Google</span>
               </motion.button>
             ) : (
-              <div className="relative">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="relative"
-                >
-                  <img
-                    src={user.profilePhoto || 'https://via.placeholder.com/150'}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full border-2 border-indigo-500"
-                  />
-                </motion.button>
+              <>
+                {/* Create Card Button */}
+                <Link to="/create">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center space-x-2 px-4 py-2 rounded-full bg-indigo-600 text-white"
+                  >
+                    <PlusCircle className="w-5 h-5" />
+                    <span className="hidden sm:inline">Create Card</span>
+                  </motion.button>
+                </Link>
 
-                <AnimatePresence>
-                  {isDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 border border-neutral-200"
-                    >
-                      <Link
-                        to="/dashboard"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="block px-4 py-2 text-neutral-700 hover:bg-neutral-50"
+                <div className="relative">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="relative"
+                  >
+                    <img
+                      src={user.profilePhoto || 'https://via.placeholder.com/150'}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full border-2 border-indigo-500"
+                    />
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 border border-neutral-200"
                       >
-                        Dashboard
-                      </Link>
-                      <button
-                        onClick={logout}
-                        className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-neutral-50"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="block px-4 py-2 text-neutral-700 hover:bg-neutral-50"
+                        >
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={logout}
+                          className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-neutral-50"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
             )}
 
             <button 
@@ -127,6 +141,19 @@ const Navbar = () => {
                   />
                   <Search className="absolute right-3 top-2.5 w-5 h-5 text-neutral-400" />
                 </div>
+
+                {user && (
+                  <Link to="/create">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center space-x-2 w-full px-4 py-2 rounded-full bg-indigo-600 text-white"
+                    >
+                      <PlusCircle className="w-5 h-5" />
+                      <span>Create Card</span>
+                    </motion.button>
+                  </Link>
+                )}
               </div>
             </motion.div>
           )}

@@ -10,6 +10,7 @@
     "dev-client": "concurrently \"cd client && npm run dev\" \"cd client && npm run sass\""
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.14.0",
     "connect-mongo": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -17,6 +18,7 @@
     "express-session": "^1.18.1",
     "mongodb": "^5.7.0",
     "mongoose": "^7.3.4",
+    "multer": "^1.4.5-lts.1",
     "nodemon": "^3.1.7",
     "npx": "^10.2.2",
     "passport": "^0.7.0",

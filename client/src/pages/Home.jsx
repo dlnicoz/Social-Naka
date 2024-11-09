@@ -117,7 +117,7 @@ export function Home() {
     <div className="min-h-screen bg-gray-50">
       <Navbar isAuthenticated={isAuthenticated} user={user} /> {/* Pass props to Navbar */}
       
-      <main className="py-20">
+      <main className="py-24">
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
           {/* Header */}
           <motion.div
