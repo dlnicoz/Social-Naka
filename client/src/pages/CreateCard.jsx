@@ -5,15 +5,17 @@ import { indianCities } from '../data/indianCities';
 import { useNavigate } from 'react-router-dom'; // for navigation
 import api from '../services/api'; // assuming this handles API requests
 
+const DEFAULT_PROFILE_IMAGE = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80';
+
 const CreateCard = () => {
   const navigate = useNavigate(); // navigation hook
   const [formData, setFormData] = useState({
     name: '',
     profession: '',
     description: '',
-    profilePhoto: '',
+    photoURL: '',
     location: '',
-    theme: 'default',
+    theme: 'gradient',
     contact: {
       phone: '',
       email: ''
@@ -28,9 +30,9 @@ const CreateCard = () => {
   });
 
   const [urlError, setUrlError] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   const themes = [
-    { name: 'default', label: 'Classic' },
     { name: 'gradient', label: 'Gradient' },
     { name: 'dark', label: 'Dark' },
     { name: 'elegant', label: 'Elegant' },
@@ -62,7 +64,30 @@ const CreateCard = () => {
     }
   };
 
+  const handleImageUrlChange = (e) => {
+    const url = e.target.value;
+    setImageUrl(url);
+    if (!url) {
+      setFormData((prev) => ({ ...prev, photoURL: '' }));
+      setUrlError('');
+      return;
+    }
+    validateImageUrl(url);
+  };
+
+  const handleImageUrlPaste = (e) => {
+    const pastedUrl = e.clipboardData.getData('text');
+    setImageUrl(pastedUrl);
+    validateImageUrl(pastedUrl);
+  };
+
   const validateImageUrl = async (url) => {
+    if (!url) {
+      setFormData((prev) => ({ ...prev, photoURL: '' }));
+      setUrlError('');
+      return;
+    }
+
     try {
       const img = new Image();
       img.src = url;
@@ -74,21 +99,21 @@ const CreateCard = () => {
       setFormData((prev) => ({ ...prev, photoURL: url }));
     } catch {
       setUrlError('Please enter a valid image URL');
+      setFormData((prev) => ({ ...prev, photoURL: '' }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Send form data to the API
       await api.post('/socialcards', formData);
-      // Redirect to dashboard on successful submission
       navigate('/dashboard');
     } catch (error) {
       console.error('Error creating social card:', error);
-      // Handle error here if necessary
+      alert(error.response?.data?.message || 'Failed to create social card. Please try again.');
     }
   };
+  
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -114,16 +139,17 @@ const CreateCard = () => {
                 </label>
                 <div className="flex items-center space-x-4">
                   <img
-                    src={formData.profilePhoto}
+                    src={formData.photoURL || DEFAULT_PROFILE_IMAGE}
                     alt="Preview"
                     className="w-16 h-16 rounded-xl object-cover"
                   />
                   <input
                     type="url"
-                    name="profilePhoto"
-                    value={formData.profilePhoto}
-                    onChange={(e) => validateImageUrl(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
+                    name="photoURL"
+                    value={imageUrl}
+                    onChange={handleImageUrlChange}
+                    onPaste={handleImageUrlPaste}
+                    placeholder="https://example.com/your-image.jpg"
                     className="flex-1 px-4 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -300,6 +326,24 @@ const CreateCard = () => {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* Preview */}
+        <div className="lg:col-span-1 lg:flex justify-center">
+          <div className={`w-full max-w-md rounded-2xl shadow-lg bg-${formData.theme}`}>
+            <div className="p-6">
+              <div className="flex justify-center">
+                <img
+                  src={formData.photoURL || DEFAULT_PROFILE_IMAGE}
+                  alt="Profile Preview"
+                  className="w-24 h-24 rounded-full object-cover"
+                />
+              </div>
+              <h2 className="text-xl font-semibold text-center mt-4">{formData.name || 'John Doe'}</h2>
+              <p className="text-sm text-center text-neutral-500">{formData.profession || 'Designer'}</p>
+              <p className="text-sm text-center text-neutral-600 mt-2">{formData.description || 'Lorem ipsum dolor sit amet...'}</p>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>

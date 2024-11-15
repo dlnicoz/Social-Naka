@@ -60,11 +60,14 @@ app.get('/', (req, res) => {
 // Example route for /auth/check
 app.get('/api/auth/check', (req, res) => {
   if (req.isAuthenticated()) {
-    res.json({ user: req.user });
+    // Send the entire user object, including profilePhoto
+    const { _id, googleId, email, name, profilePhoto } = req.user;
+    return res.json({ user: { _id, googleId, email, name, profilePhoto } });
   } else {
-    res.json({ user: null });
+    return res.json({ user: null });
   }
 });
+
 
 
 import rateLimit from 'express-rate-limit';

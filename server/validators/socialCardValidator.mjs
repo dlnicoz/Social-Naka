@@ -1,5 +1,3 @@
-import Joi from 'joi';
-
 export const socialCardSchema = Joi.object({
   profilePhoto: Joi.string().uri().required(),
   profession: Joi.string().min(3).max(50).required(),
@@ -9,11 +7,11 @@ export const socialCardSchema = Joi.object({
       platform: Joi.string().required(),
       url: Joi.string().uri().required()
     })
-  ),
-  category: Joi.string().required(),
+  ).optional(),
+  category: Joi.string().default('Uncategorized'),
   location: Joi.string().required(),
   designCustomization: Joi.object({
-    color: Joi.string().required(),
-    font: Joi.string().required()
-  }).required()
+    color: Joi.string().default('default'),
+    font: Joi.string().default('default'),
+  }).default(),
 });

@@ -11,6 +11,11 @@ passport.use(new GoogleStrategy({
   try {
     let user = await User.findOne({ googleId: profile.id });
     if (user) {
+      // Update profilePhoto if it changes
+      if (user.profilePhoto !== profile.photos[0]?.value) {
+        user.profilePhoto = profile.photos[0]?.value;
+        await user.save();
+      }
       return done(null, user);
     }
 
@@ -18,8 +23,7 @@ passport.use(new GoogleStrategy({
       googleId: profile.id,
       email: profile.emails[0].value,
       name: profile.displayName,
-      profilePhoto: profile.photos[0]?.value  // Save profile photo URL
-
+      profilePhoto: profile.photos[0]?.value // Save profile photo
     });
 
     user = await newUser.save();
@@ -28,6 +32,7 @@ passport.use(new GoogleStrategy({
     done(err, false);
   }
 }));
+
 
 passport.serializeUser((user, done) => {
   done(null, user.id);  // Store the user ID in the session
