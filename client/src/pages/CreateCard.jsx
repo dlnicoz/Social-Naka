@@ -15,17 +15,15 @@ const CreateCard = () => {
     description: '',
     photoURL: '',
     location: '',
-    theme: 'gradient',
-    contact: {
-      phone: '',
-      email: ''
-    },
-    links: {
-      instagram: '',
+    theme: 'gradient', // Default theme
+    phoneNumber: '', // Added phone number
+    email: '', // Added email
+    socialLinks: {
+      linkedin: '',
       twitter: '',
+      instagram: '',
       website: '',
-      github: '',
-      linkedin: ''
+      github: ''
     }
   });
 
@@ -48,6 +46,19 @@ const CreateCard = () => {
     { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/in/username' }
   ];
 
+
+  const handleImageUrlChange = (e) => {
+    const url = e.target.value;
+    setFormData((prev) => ({ ...prev, photoURL: url }));
+    validateImageUrl(url);
+  };
+
+  const handleImageUrlPaste = (e) => {
+    const pastedUrl = e.clipboardData.getData('text');
+    setImageUrl(pastedUrl);
+    validateImageUrl(pastedUrl);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.includes('.')) {
@@ -62,23 +73,6 @@ const CreateCard = () => {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-  };
-
-  const handleImageUrlChange = (e) => {
-    const url = e.target.value;
-    setImageUrl(url);
-    if (!url) {
-      setFormData((prev) => ({ ...prev, photoURL: '' }));
-      setUrlError('');
-      return;
-    }
-    validateImageUrl(url);
-  };
-
-  const handleImageUrlPaste = (e) => {
-    const pastedUrl = e.clipboardData.getData('text');
-    setImageUrl(pastedUrl);
-    validateImageUrl(pastedUrl);
   };
 
   const validateImageUrl = async (url) => {
@@ -97,23 +91,71 @@ const CreateCard = () => {
       });
       setUrlError('');
       setFormData((prev) => ({ ...prev, photoURL: url }));
-    } catch {
+    } catch (e) {
       setUrlError('Please enter a valid image URL');
       setFormData((prev) => ({ ...prev, photoURL: '' }));
     }
   };
 
+  const validateSocialLinks = () => {
+    for (let key in formData.socialLinks) {
+      if (formData.socialLinks[key] && !isValidUrl(formData.socialLinks[key])) {
+        alert(`Invalid URL for ${key}`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Transform socialLinks into an array of { platform, url } objects
+    const validSocialLinks = Object.entries(formData.socialLinks)
+      .filter(([platform, url]) => url.trim() !== '')
+      .map(([platform, url]) => ({ platform, url }));
+  
+    // Prepare payload
+    const data = {
+      ...formData,
+      socialLinks: validSocialLinks,
+      profilePhoto: formData.photoURL || DEFAULT_PROFILE_IMAGE,
+    };
+  
     try {
-      await api.post('/socialcards', formData);
-      navigate('/dashboard');
+      const response = await api.post('/socialcards', data); // Correct endpoint
+      console.log('Social card created successfully', response);
+      navigate('/dashboard'); // Navigate to the dashboard or success page
     } catch (error) {
-      console.error('Error creating social card:', error);
-      alert(error.response?.data?.message || 'Failed to create social card. Please try again.');
+      console.error('Error creating social card:', error.response?.data || error.message);
+      alert(`Failed to create card: ${error.response?.data.error || error.message}`);
     }
   };
   
+  
+  
+
+  const isFormValid = () => {
+    return (
+      formData.name &&
+      formData.profession &&
+      formData.description &&
+      formData.location &&
+      formData.phoneNumber &&
+      formData.email
+    );
+  };
+  
+  
+
+  const isValidUrl = (url) => {
+    try {
+      new URL(url); // Try to create a new URL object. If it fails, it's not a valid URL
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -125,7 +167,7 @@ const CreateCard = () => {
         <div className="space-y-6">
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-6">
             <h1 className="text-2xl font-bold text-neutral-900 mb-6">Create Your Social Card</h1>
-            
+
             <div className="space-y-6">
               {/* Profile Image URL */}
               <motion.div
@@ -146,7 +188,7 @@ const CreateCard = () => {
                   <input
                     type="url"
                     name="photoURL"
-                    value={imageUrl}
+                    value={formData.photoURL}
                     onChange={handleImageUrlChange}
                     onPaste={handleImageUrlPaste}
                     placeholder="https://example.com/your-image.jpg"
@@ -163,6 +205,7 @@ const CreateCard = () => {
 
               {/* Basic Info */}
               <div className="space-y-4">
+                {/* Name, Profession, Description */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -251,8 +294,8 @@ const CreateCard = () => {
                     <Phone className="w-5 h-5 text-neutral-400" />
                     <input
                       type="tel"
-                      name="contact.phone"
-                      value={formData.contact.phone}
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
                       onChange={handleChange}
                       placeholder="Phone number"
                       className="flex-1 px-4 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -262,8 +305,8 @@ const CreateCard = () => {
                     <Mail className="w-5 h-5 text-neutral-400" />
                     <input
                       type="email"
-                      name="contact.email"
-                      value={formData.contact.email}
+                      name="email"
+                      value={formData.email}
                       onChange={handleChange}
                       placeholder="Email address"
                       className="flex-1 px-4 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -286,8 +329,8 @@ const CreateCard = () => {
                       <LinkIcon className="w-5 h-5 text-neutral-400" />
                       <input
                         type="url"
-                        name={`links.${platform.key}`}
-                        value={formData.links[platform.key]}
+                        name={`socialLinks.${platform.key}`}
+                        value={formData.socialLinks[platform.key]}
                         onChange={handleChange}
                         placeholder={platform.placeholder}
                         className="flex-1 px-4 py-2 rounded-lg border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -320,10 +363,14 @@ const CreateCard = () => {
 
               <button
                 type="submit"
+                disabled={!isFormValid()}
                 className="mt-6 w-full py-2 px-4 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
               >
                 Create Card
               </button>
+              {urlError && (
+                <p className="text-red-500 text-sm">{urlError}</p>
+              )}
             </div>
           </form>
         </div>

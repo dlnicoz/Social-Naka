@@ -7,11 +7,10 @@ const router = express.Router();
 // Fetch all social cards (public)
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, location } = req.query;
+    const { page = 1, limit = 10,  location } = req.query;
 
     // Build filter query
     const filter = {};
-    if (category) filter.category = category;
     if (location) filter.location = location;
 
     // Paginate and filter results
@@ -36,28 +35,37 @@ router.get('/', async (req, res) => {
 });
 
 // Create a new social card (restricted to authenticated users)
-router.post('/', ensureAuth, async (req, res) => {
+router.post('/socialcards', ensureAuth, async (req, res) => {
   try {
-    const { profilePhoto, profession, description, socialLinks, category, location, designCustomization } = req.body;
+    console.log('Creating social card with data:', req.body);
 
-    const newCard = new SocialCard({
-      userId: req.user._id,
-      profilePhoto,
-      profession,
-      description,
-      socialLinks,
-      category,
-      location,
-      designCustomization
-    });
+    const validSocialLinks = Object.entries(req.body.socialLinks || {})
+      .filter(([key, value]) => value.trim())
+      .map(([platform, url]) => ({ platform, url }));
 
-    const savedCard = await newCard.save();
-    res.status(201).json(savedCard);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    if (!validSocialLinks.length) {
+      return res.status(400).send({ error: 'No valid social links provided' });
+    }
+
+    const socialCardData = {
+      ...req.body,
+      socialLinks: validSocialLinks,
+      userId: req.user._id, // Add authenticated user ID
+    };
+
+    const newSocialCard = await SocialCard.create(socialCardData);
+    res.status(201).send({ success: true, data: newSocialCard });
+  } catch (error) {
+    console.error('Error creating social card:', error.message);
+    res.status(500).send({ error: 'Internal Server Error' });
   }
 });
+
+
+
+
+
+
 
 // Fetch a single social card by ID (public)
 router.get('/:id', async (req, res) => {

@@ -5,13 +5,8 @@ export const socialCardSchema = Joi.object({
   socialLinks: Joi.array().items(
     Joi.object({
       platform: Joi.string().required(),
-      url: Joi.string().uri().required()
+      url: Joi.string().uri().required(),
     })
-  ).optional(),
-  category: Joi.string().default('Uncategorized'),
-  location: Joi.string().required(),
-  designCustomization: Joi.object({
-    color: Joi.string().default('default'),
-    font: Joi.string().default('default'),
-  }).default(),
+  ).required(),
+  location: Joi.string().required().default(),
 });
