@@ -1,154 +1,82 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Instagram, Twitter, Phone, Mail, Github, Globe, Linkedin, Youtube } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { Github, Twitter, Linkedin, Instagram, Globe, Phone, MapPin } from 'lucide-react';
 
-const themes = {
-  default: 'bg-white',
-  minimal: 'bg-neutral-50 shadow-sm',
-  gradient: 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white',
-  dark: 'bg-neutral-900 text-white',
-  light: 'bg-neutral-100',
-  bordered: 'bg-white border-2 border-indigo-500',
-  rounded: 'bg-white rounded-3xl',
-  compact: 'bg-white shadow-sm',
-  elegant: 'bg-gradient-to-br from-neutral-900 to-neutral-800 text-white',
-  vibrant: 'bg-gradient-to-br from-pink-500 to-orange-500 text-white'
-};
-
+// Define theme styles
 const themeStyles = {
-  default: 'hover:shadow-xl',
-  minimal: 'hover:shadow-md',
-  gradient: 'hover:shadow-indigo-500/20',
-  dark: 'hover:shadow-neutral-900/20',
-  light: 'hover:shadow-lg',
-  bordered: 'hover:border-indigo-600',
-  rounded: 'hover:shadow-xl',
-  compact: 'hover:shadow-md',
-  elegant: 'hover:shadow-neutral-900/20',
-  vibrant: 'hover:shadow-pink-500/20'
+  minimal: 'bg-white border border-gray-200',
+  gradient: 'bg-gradient-to-br from-purple-500 to-pink-500 text-white',
+  neon: 'bg-black border-2 border-neon-green text-neon-green shadow-neon',
+  retro: 'bg-yellow-100 border-2 border-orange-400',
 };
 
-const SocialCard = ({
-  id,
-  user,
-  featured = false,
-  theme = 'default'
-}) => {
-  const themeClass = themes[theme];
-  const hoverClass = themeStyles[theme];
-  const isDark = ['gradient', 'dark', 'elegant', 'vibrant'].includes(theme);
+// Map of social platform to icon
+const iconMap = {
+  github: Github,
+  twitter: Twitter,
+  linkedin: Linkedin,
+  instagram: Instagram,
+  website: Globe,
+};
 
+export default function SocialCard({ user }) {
   return (
-    <motion.div
-      whileHover={{ y: -5 }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`relative overflow-hidden rounded-xl transition-all w-full aspect-[1/1.586] ${themeClass} ${hoverClass} ${
-        featured ? 'ring-2 ring-indigo-500 ring-offset-2' : ''
-      }`}
-    >
-      <Link to={`/profile/${id}`} className="block relative h-1/2">
+    <div className={cn(
+      'rounded-lg p-6 max-w-md mx-auto transition-all duration-300',
+      themeStyles[user.theme]
+    )}>
+      <div className="flex flex-col items-center text-center">
         <img
-          src={user.photoURL || 'https://via.placeholder.com/150'}
+          src={user.profileUrl}
           alt={user.name}
-          className="w-full h-full object-cover"
+          className="w-24 h-24 rounded-full object-cover mb-4"
         />
-        <div className={`absolute inset-0 bg-gradient-to-b ${
-          isDark ? 'from-transparent to-black/50' : 'from-transparent to-black/30'
-        }`} />
-      </Link>
+        <h2 className="text-2xl font-bold mb-1">{user.name}</h2>
+        <p className="text-lg mb-2">{user.profession}</p>
+        
+        {user.description && (
+          <p className="text-sm mb-4">{user.description}</p>
+        )}
 
-      <div className="p-4 h-1/2">
-        <div className="flex flex-col h-full">
-          <Link to={`/profile/${id}`} className="flex-1">
-            <h3 className={`font-bold text-lg leading-tight ${isDark ? 'text-white' : 'text-neutral-900'}`}>
-              {user.name}
-            </h3>
-            <p className={`text-sm ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
-              {user.profession}
-            </p>
-            <p className={`mt-2 text-sm line-clamp-2 ${isDark ? 'text-neutral-300' : 'text-neutral-500'}`}>
-              {user.description}
-            </p>
-          </Link>
+        <div className="flex items-center gap-2 mb-4">
+          {user.phone && (
+            <div className="flex items-center gap-1">
+              <Phone size={16} />
+              <span className="text-sm">{user.phone}</span>
+            </div>
+          )}
+          {user.location && (
+            <div className="flex items-center gap-1">
+              <MapPin size={16} />
+              <span className="text-sm">{user.location}</span>
+            </div>
+          )}
+        </div>
 
-          <div className="mt-3 flex space-x-2">
-            {user.contact?.phone && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.open(`tel:${user.contact.phone}`)}
-                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-green-100 text-green-600'} p-1.5`}
+        <div className="w-full space-y-3">
+          {user.socialLinks.map((link) => {
+            const Icon = iconMap[link.platform.toLowerCase()] || Globe;
+            return (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  'flex items-center gap-2 p-3 rounded-lg transition-all duration-300',
+                  user.theme === 'minimal' && 'bg-gray-100 hover:bg-gray-200',
+                  user.theme === 'gradient' && 'bg-white/10 hover:bg-white/20',
+                  user.theme === 'neon' && 'border border-neon-green hover:bg-neon-green/10',
+                  user.theme === 'retro' && 'bg-orange-200 hover:bg-orange-300'
+                )}
               >
-                <Phone className="h-4 w-4" />
-              </motion.button>
-            )}
-            {user.links?.instagram && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.open(user.links.instagram, '_blank')}
-                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-pink-100 text-pink-600'} p-1.5`}
-              >
-                <Instagram className="h-4 w-4" />
-              </motion.button>
-            )}
-            {user.links?.twitter && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.open(user.links.twitter, '_blank')}
-                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-blue-100 text-blue-600'} p-1.5`}
-              >
-                <Twitter className="h-4 w-4" />
-              </motion.button>
-            )}
-            {user.links?.website && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.open(user.links.website, '_blank')}
-                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-blue-100 text-blue-600'} p-1.5`}
-              >
-                <Globe className="h-4 w-4" />
-              </motion.button>
-            )}
-            {user.links?.github && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.open(user.links.github, '_blank')}
-                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-600'} p-1.5`}
-              >
-                <Github className="h-4 w-4" />
-              </motion.button>
-            )}
-            {user.links?.linkedin && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.open(user.links.linkedin, '_blank')}
-                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-blue-100 text-blue-600'} p-1.5`}
-              >
-                <Linkedin className="h-4 w-4" />
-              </motion.button>
-            )}
-            {user.links?.youtube && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => window.open(user.links.youtube, '_blank')}
-                className={`rounded-full ${isDark ? 'bg-white/10 text-white' : 'bg-red-100 text-red-600'} p-1.5`}
-              >
-                <Youtube className="h-4 w-4" />
-              </motion.button>
-            )}
-          </div>
+                <Icon size={20} />
+                <span className="flex-1">{link.platform}</span>
+              </a>
+            );
+          })}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
-};
-
-export default SocialCard;
+}

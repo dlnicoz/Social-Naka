@@ -3,8 +3,6 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import cors from 'cors';
-import passport from 'passport';
-import './config/passport.mjs';  // Passport configuration
 
 dotenv.config();
 
@@ -19,7 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
 // Middleware
 // Enable CORS for requests coming from frontend (localhost:5173)
 app.use(cors({
-  origin: 'http://localhost:5173',  // Allow requests from frontend
+  origin: 'http://localhost:3000',  // Allow requests from frontend
   credentials: true  // Allow cookies and session credentials
 }));
 app.use(express.json());
@@ -40,35 +38,11 @@ app.use(session({
   }
 }));
 
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-import authRoutes from './routes/auth.mjs';
-app.use('/api', authRoutes);  // routes under /api
-
-
-import socialCardRoutes from './routes/socialCard.mjs';
-app.use('/api/socialcards', socialCardRoutes);  // This registers the social card routes with /api/socialcards
 
 // Add a root route handler for "/"
 app.get('/', (req, res) => {
   res.send('Welcome to the Social Card App!');
 });
-
-// Example route for /auth/check
-app.get('/api/auth/check', (req, res) => {
-  if (req.isAuthenticated()) {
-    // Send the entire user object, including profilePhoto
-    const { _id, googleId, email, name, profilePhoto } = req.user;
-    return res.json({ user: { _id, googleId, email, name, profilePhoto } });
-  } else {
-    return res.json({ user: null });
-  }
-});
-
-
 
 import rateLimit from 'express-rate-limit';
 
@@ -80,6 +54,13 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
+import socialCardsRouter from './routes/socialCards.mjs';
+
+// Add API routes for social cards
+app.use('/api/social-cards', socialCardsRouter);
+
+
 
 
 // Start the server
