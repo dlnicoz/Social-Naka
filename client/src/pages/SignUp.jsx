@@ -4,6 +4,7 @@ import { Eye , Atom } from 'lucide-react';
 import axios from 'axios';
 import AuthSideImage from '../components/AuthSideImage';
 
+
 const Signup = () => {
     const [values, setValues] = useState({ username: '', email: '', password: '', confirmPassword: '' });
     const [userExists, setUserExists] = useState(false);

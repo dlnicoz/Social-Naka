@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import ThemeCard from '../components/ThemeCard';
 import SocialCard from '../components/SocialCard';
 import { generateUUID } from '../lib/utils';
-import axios from 'axios'; // Import axios for API calls
+import axios from 'axios';
 
 const defaultUser = {
-  id: '1',
   name: 'John Doe',
   profession: 'Software Developer',
   phone: '+1 234 567 890',
@@ -20,9 +19,22 @@ const defaultUser = {
   ],
 };
 
-export default function Dashboard() {
-  const [formData, setFormData] = useState(defaultUser); // State for form data
 
+export default function Dashboard() {
+  const [formData, setFormData] = useState(defaultUser); // Form state
+  const [authToken, setAuthToken] = useState(''); // State for auth token
+
+  // Fetch auth token on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('auth-token');
+    if (!token) {
+      alert('You need to log in to access the dashboard.');
+      window.location = '/'; // Redirect to login
+    }
+    setAuthToken(token);
+  }, []);
+
+  // Function to handle adding a new social link
   const addSocialLink = () => {
     setFormData({
       ...formData,
@@ -33,6 +45,7 @@ export default function Dashboard() {
     });
   };
 
+  // Function to remove a social link
   const removeSocialLink = (id) => {
     setFormData({
       ...formData,
@@ -40,6 +53,7 @@ export default function Dashboard() {
     });
   };
 
+  // Function to update social link details
   const updateSocialLink = (id, field, value) => {
     setFormData({
       ...formData,
@@ -49,13 +63,21 @@ export default function Dashboard() {
     });
   };
 
-  // Save card to backend
+  // Function to save the card
   const saveCard = () => {
+    if (!authToken) {
+      alert('You are not authenticated. Please log in.');
+      return;
+    }
+
     axios
-      .post('http://localhost:5000/api/social-cards', formData) // Use formData correctly
+      .post('http://localhost:5000/api/social-cards', formData, {
+        headers: { 'auth-token': authToken },
+      })
       .then((response) => {
         console.log('Card saved:', response.data);
-        alert('Social Card Saved Successfully!'); // Notify the user
+        alert('Social Card Saved Successfully!');
+        setFormData(defaultUser); // Reset form after save
       })
       .catch((error) => {
         console.error('Error saving card:', error.response?.data || error.message);
@@ -64,7 +86,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 pt-32">
+    <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Create Your Social Hub</h1>
@@ -72,13 +94,13 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Preview */}
+          {/* Preview Section */}
           <div className="order-2 lg:order-1">
             <h2 className="text-xl font-semibold mb-4">Preview</h2>
             <SocialCard user={formData} />
           </div>
 
-          {/* Editor */}
+          {/* Form Section */}
           <div className="order-1 lg:order-2 bg-white p-6 rounded-lg shadow-sm">
             <h2 className="text-xl font-semibold mb-6">Edit Your Profile</h2>
             <div className="space-y-6">
@@ -91,9 +113,10 @@ export default function Dashboard() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Enter your name"
+                    required
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Profession</label>
                   <input
@@ -101,9 +124,10 @@ export default function Dashboard() {
                     value={formData.profession}
                     onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Enter your profession"
+                    required
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Phone</label>
                   <input
@@ -111,9 +135,9 @@ export default function Dashboard() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Enter your phone number"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Location</label>
                   <input
@@ -121,9 +145,10 @@ export default function Dashboard() {
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Enter your location"
+                    required
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Description</label>
                   <textarea
@@ -131,9 +156,9 @@ export default function Dashboard() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Write a brief description about yourself"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Profile Image URL</label>
                   <input
@@ -141,6 +166,8 @@ export default function Dashboard() {
                     value={formData.profileUrl}
                     onChange={(e) => setFormData({ ...formData, profileUrl: e.target.value })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Enter a profile image URL"
+                    required
                   />
                 </div>
               </div>
@@ -172,7 +199,6 @@ export default function Dashboard() {
                     Add Link
                   </button>
                 </div>
-
                 <div className="space-y-4">
                   {formData.socialLinks.map((link) => (
                     <div key={link.id} className="flex gap-4 items-start">
@@ -181,7 +207,9 @@ export default function Dashboard() {
                           type="text"
                           placeholder="Platform (e.g., Twitter, GitHub)"
                           value={link.platform}
-                          onChange={(e) => updateSocialLink(link.id, 'platform', e.target.value)}
+                          onChange={(e) =>
+                            updateSocialLink(link.id, 'platform', e.target.value)
+                          }
                           className="mb-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
                         <input
@@ -205,7 +233,7 @@ export default function Dashboard() {
 
               {/* Save Button */}
               <button
-                onClick={saveCard} // Save card handler
+                onClick={saveCard}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
               >
                 Save Card

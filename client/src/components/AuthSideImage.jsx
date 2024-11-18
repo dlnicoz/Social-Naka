@@ -8,7 +8,7 @@ function AuthSideImage({ imageUrl, overlayColor }) {
           style={{ 
             backgroundImage: `url('${imageUrl}')`,
             backgroundSize: 'cover',
-            // backgroundPosition: 'center',
+            // backgroundPosition: 'center',    
             backgroundRepeat: 'no-repeat',
             width: '100%',
             height: '100%'

@@ -1,36 +1,34 @@
 // routes/socialCards.js
 import express from 'express';
 import SocialCard from '../models/SocialCards.mjs';
+import verify from '../middleware/verifyToken.mjs'; // Middleware to verify JWT
 
 const router = express.Router();
 
 // Create a new social card
-router.post('/', async (req, res) => {
-    const { name, profileUrl, profession, location, phone, description, theme, socialLinks } = req.body;
-  
-    // Validate required fields
-    if (!name || !profileUrl || !profession || !location) {
-      return res.status(400).json({ error: 'Name, Profile URL, Profession, and Location are required' });
-    }
-  
-    try {
-      const newCard = new SocialCard({
-        name,
-        profileUrl,
-        profession,
-        location,
-        phone,
-        description,
-        theme,
-        socialLinks,
-      });
-  
-      const savedCard = await newCard.save();
-      res.status(201).json(savedCard);
-    } catch (err) {
-      res.status(500).json({ error: 'Error creating card', details: err.message });
-    }
-  });
+router.post('/', verify, async (req, res) => {
+  try {
+    const { name, profession, location, profileUrl, phone, description, theme, socialLinks } = req.body;
+
+    // Create a new social card
+    const newCard = new SocialCard({
+      userId: req.user._id, // Extracted from the verified token
+      name,
+      profession,
+      location,
+      profileUrl,
+      phone,
+      description,
+      theme,
+      socialLinks,
+    });
+
+    const savedCard = await newCard.save();
+    res.status(201).json(savedCard);
+  } catch (err) {
+    res.status(400).json({ error: 'Error creating card', details: err.message });
+  }
+});
 
 // Fetch all social cards
 router.get('/', async (req, res) => {
