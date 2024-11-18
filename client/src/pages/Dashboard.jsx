@@ -19,10 +19,11 @@ const defaultUser = {
   ],
 };
 
-
 export default function Dashboard() {
   const [formData, setFormData] = useState(defaultUser); // Form state
   const [authToken, setAuthToken] = useState(''); // State for auth token
+  const [loading, setLoading] = useState(true); // State to track loading
+  const [isNewCard, setIsNewCard] = useState(true); // State to track if it's a new card
 
   // Fetch auth token on component mount
   useEffect(() => {
@@ -32,6 +33,25 @@ export default function Dashboard() {
       window.location = '/'; // Redirect to login
     }
     setAuthToken(token);
+
+    // Fetch the user's social card (if any)
+    axios
+      .get('http://localhost:5000/api/social-cards/me', {
+        headers: { 'auth-token': token },
+      })
+      .then((response) => {
+        setFormData(response.data); // Populate formData with the fetched card
+        setIsNewCard(false); // Mark as an existing card
+      })
+      .catch((error) => {
+        if (error.response?.status === 404) {
+          console.log('No social card found, creating a new one.');
+        } else {
+          console.error('Error fetching social card:', error.message);
+          alert('An error occurred while fetching your social card.');
+        }
+      })
+      .finally(() => setLoading(false)); // Stop loading once the request is complete
   }, []);
 
   // Function to handle adding a new social link
@@ -70,14 +90,19 @@ export default function Dashboard() {
       return;
     }
 
-    axios
-      .post('http://localhost:5000/api/social-cards', formData, {
-        headers: { 'auth-token': authToken },
-      })
+    const apiCall = isNewCard
+      ? axios.post('http://localhost:5000/api/social-cards', formData, {
+          headers: { 'auth-token': authToken },
+        })
+      : axios.put('http://localhost:5000/api/social-cards/me', formData, {
+          headers: { 'auth-token': authToken },
+        });
+
+    apiCall
       .then((response) => {
         console.log('Card saved:', response.data);
         alert('Social Card Saved Successfully!');
-        setFormData(defaultUser); // Reset form after save
+        setIsNewCard(false); // Mark as an existing card after saving
       })
       .catch((error) => {
         console.error('Error saving card:', error.response?.data || error.message);
@@ -85,11 +110,17 @@ export default function Dashboard() {
       });
   };
 
+  if (loading) {
+    return <div>Loading...</div>; // Show a loading indicator while data is being fetched
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 pt-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create Your Social Hub</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isNewCard ? 'Create Your Social Hub' : 'Edit Your Social Hub'}
+          </h1>
           <p className="mt-2 text-gray-600">Customize your profile and share it with the world</p>
         </div>
 
@@ -102,7 +133,10 @@ export default function Dashboard() {
 
           {/* Form Section */}
           <div className="order-1 lg:order-2 bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-6">Edit Your Profile</h2>
+            <h2 className="text-xl font-semibold mb-6">
+              {isNewCard ? 'Create Your Profile' : 'Edit Your Profile'}
+            </h2>
+
             <div className="space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
@@ -169,21 +203,6 @@ export default function Dashboard() {
                     placeholder="Enter a profile image URL"
                     required
                   />
-                </div>
-              </div>
-
-              {/* Theme Selection */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Choose Theme</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {['minimal', 'gradient', 'neon', 'retro'].map((theme) => (
-                    <ThemeCard
-                      key={theme}
-                      theme={theme}
-                      isSelected={formData.theme === theme}
-                      onClick={() => setFormData({ ...formData, theme })}
-                    />
-                  ))}
                 </div>
               </div>
 
