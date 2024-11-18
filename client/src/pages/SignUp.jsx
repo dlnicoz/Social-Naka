@@ -29,32 +29,34 @@ const Signup = () => {
         setUserExists(false);
         setEmailExists(false);
         setPasswordsMatch(true);
-
-        // Ensure passwords match before submitting
+      
         if (values.password !== values.confirmPassword) {
-            setPasswordsMatch(false);
-            setIsSubmitting(false);
-            return;
+          setPasswordsMatch(false);
+          setIsSubmitting(false);
+          return;
         }
-
+      
         try {
-            const res = await axios.post('http://localhost:5000/api/users/register', values);
-            localStorage.setItem('auth-token', res.data);
-            alert('Registration successful!');
-            window.location = '/dashboard'; // Redirect to dashboard
+          const res = await axios.post('http://localhost:5000/api/users/register', values);
+          // Save the token and username from the response
+          localStorage.setItem('auth-token', res.data.token);
+          localStorage.setItem('username', res.data.username);
+          alert('Registration successful!');
+          window.location = '/dashboard'; // Redirect to dashboard
         } catch (err) {
-            const error = err.response?.data || 'Unknown error';
-            if (error === 'Email already exists') {
-                setEmailExists(true);
-            } else if (error === 'Username already exists') {
-                setUserExists(true);
-            } else {
-                console.error(error);
-            }
+          const error = err.response?.data || 'Unknown error';
+          if (error === 'Email already exists') {
+            setEmailExists(true);
+          } else if (error === 'Username already exists') {
+            setUserExists(true);
+          } else {
+            console.error(error);
+          }
         } finally {
-            setIsSubmitting(false);
+          setIsSubmitting(false);
         }
-    };
+      };
+      
 
     return (
         <>

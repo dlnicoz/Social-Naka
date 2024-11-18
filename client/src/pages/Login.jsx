@@ -21,25 +21,28 @@ const Login = () => {
         setIsSubmitting(true);
         setUserNotFound(false);
         setWrongPassword(false);
-
+      
         try {
-            const res = await axios.post('http://localhost:5000/api/users/login', values);
-            localStorage.setItem('auth-token', res.data);
-            alert('Login successful!');
-            window.location = '/dashboard'; // Redirect to dashboard
+          const res = await axios.post('http://localhost:5000/api/users/login', values);
+          // Save the token and username from the response
+          localStorage.setItem('auth-token', res.data.token);
+          localStorage.setItem('username', res.data.username);
+          alert('Login successful!');
+          window.location = '/dashboard'; // Redirect to dashboard
         } catch (err) {
-            const error = err.response?.data || 'Unknown error';
-            if (error === 'Username/Email not found') {
-                setUserNotFound(true);
-            } else if (error === 'Invalid password') {
-                setWrongPassword(true);
-            } else {
-                console.error(error);
-            }
+          const error = err.response?.data || 'Unknown error';
+          if (error === 'Username/Email not found') {
+            setUserNotFound(true);
+          } else if (error === 'Invalid password') {
+            setWrongPassword(true);
+          } else {
+            console.error(error);
+          }
         } finally {
-            setIsSubmitting(false);
+          setIsSubmitting(false);
         }
-    };
+      };
+      
 
     return (
         <>
