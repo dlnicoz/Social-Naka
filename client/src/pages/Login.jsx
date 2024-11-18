@@ -52,7 +52,7 @@ const Login = () => {
                 <div className='relative flex w-full lg:py-[var(--lg)] lg:px-4 xl:p-8 xl:pb-4 xl:w-[calc(100vw-52%)] min-h-screen justify-center'>
                     <div className="w-full max-w-md space-y-8 pt-32">
                         <div>
-                            <h1 className="text-5xl font-black">Log in to your Linktree</h1>
+                            <h1 className="text-5xl font-black">Log in to your SocialNaka</h1>
                         </div>
                         <form className="space-y-4" onSubmit={handleSubmit}>
                             {/* Error Message Display */}
