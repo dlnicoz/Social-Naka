@@ -94,11 +94,11 @@ router.get('/me', verify, async (req, res) => {
 // Fetch social card by username
 router.get('/user/:username', async (req, res) => {
   try {
-    console.log(`Fetching user with username: ${req.username}`); // Corrected to use req.username
+    console.log(`Fetching user with username: ${req.params.username}`); // Corrected to use req.params.username
 
-    const user = await User.findOne({ username: req.username });
+    const user = await User.findOne({ username: req.params.username });
     if (!user) {
-      console.log(`User not found: ${req.username}`);
+      console.log(`User not found: ${req.params.username}`);
       return res.status(404).json({ message: 'User not found' });
     }
 
