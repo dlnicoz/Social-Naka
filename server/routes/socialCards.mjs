@@ -1,5 +1,6 @@
 import express from 'express';
 import SocialCard from '../models/SocialCards.mjs';
+import User from '../models/Users.mjs';
 import verify from '../middleware/verifyToken.mjs'; // Middleware to verify JWT
 
 const router = express.Router();
@@ -90,16 +91,34 @@ router.get('/me', verify, async (req, res) => {
   }
 });
 
-// Fetch social card by username dedicated link
+// Fetch social card by username
 router.get('/user/:username', async (req, res) => {
   try {
-    const card = await SocialCard.findOne({ username: req.params.username });
-    if (!card) return res.status(404).json({ message: 'No social card found' });
-    res.status(200).json(card);
+    console.log(`Fetching user with username: ${req.username}`); // Corrected to use req.username
+
+    const user = await User.findOne({ username: req.username });
+    if (!user) {
+      console.log(`User not found: ${req.username}`);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const socialCard = await SocialCard.findOne({ userId: user._id });
+    if (!socialCard) {
+      console.log(`Social card not found for userId: ${user._id}`);
+      return res.status(404).json({ message: 'Social card not found' });
+    }
+
+    console.log('Social card found:', socialCard);
+    res.status(200).json(socialCard);
   } catch (err) {
-    res.status(500).json({ error: 'Error fetching social card', details: err.message });
+    console.error('Server error:', err);
+    res.status(500).json({ message: 'Error fetching social card', details: err.message });
   }
 });
+
+
+
+
 
 
 

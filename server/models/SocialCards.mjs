@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
 
 const socialCardSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Link to the User model
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   name: { type: String, required: true },
   profession: { type: String, required: true },
   location: { type: String, required: true },

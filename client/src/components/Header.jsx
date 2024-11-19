@@ -38,7 +38,7 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem('auth-token');
     setIsLoggedIn(false);
-    window.location = '/';
+    window.location = '/login';
   };
 
   // Reset the dropdown auto-hide timer
