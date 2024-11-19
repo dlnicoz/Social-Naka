@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link as LinkIcon, Settings, Home, UserCircle, LogOut } from 'lucide-react';
+import { Link as LinkIcon, Settings, Home, LogOut } from 'lucide-react';
+import Avvvatars from 'avvvatars-react'; // Import Avvvatars
 import { cn } from '../lib/utils';
 
 export default function Header() {
@@ -10,6 +11,10 @@ export default function Header() {
   const [showDropdown, setShowDropdown] = useState(false); // Track dropdown visibility
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Track mobile menu visibility
   const location = useLocation(); // Get the current location (path)
+  
+  const dropdownRef = useRef(null); // Reference for the dropdown menu
+  const profileButtonRef = useRef(null); // Reference for the profile button
+  const dropdownTimerRef = useRef(null); // Timer reference for the auto-hide feature
 
   // Check login state on mount
   useEffect(() => {
@@ -29,6 +34,37 @@ export default function Header() {
 
   // Assuming you have the user info in localStorage or from the auth context
   const userName = localStorage.getItem('username') || 'User'; // Retrieve user name, fallback to 'User'
+
+  // Function to reset the dropdown auto-hide timer
+  const resetDropdownTimer = () => {
+    // Clear any existing timer
+    if (dropdownTimerRef.current) {
+      clearTimeout(dropdownTimerRef.current);
+    }
+    
+    // Set a new timer to close the dropdown after 2-3 seconds
+    dropdownTimerRef.current = setTimeout(() => {
+      setShowDropdown(false); // Hide the dropdown after the delay
+    }, 2000); // You can adjust the time delay here (in milliseconds)
+  };
+
+  // Show dropdown with auto-hide logic
+  const handleProfileClick = () => {
+    setShowDropdown((prev) => {
+      const newState = !prev;
+      if (newState) {
+        resetDropdownTimer(); // Reset the timer when the dropdown opens
+      }
+      return newState;
+    });
+  };
+
+  // Reset the timer if the dropdown is open and user interacts with it
+  useEffect(() => {
+    if (showDropdown) {
+      resetDropdownTimer();
+    }
+  }, [showDropdown]);
 
   return (
     <motion.div
@@ -81,17 +117,24 @@ export default function Header() {
                 {/* Profile photo */}
                 <div className="relative">
                   <motion.button
+                    ref={profileButtonRef} // Reference the profile button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowDropdown((prev) => !prev)} // Toggle dropdown
+                    onClick={handleProfileClick} // Toggle dropdown
                     className="flex items-center rounded-full bg-gray-100 p-2 hover:bg-gray-200"
                   >
-                    <UserCircle className="h-8 w-8 text-gray-700" />
+                    {/* Generate avatar using Avvvatars */}
+                    <Avvvatars
+                      value={userName} // Use the username to generate the avatar
+                      size={32} // Adjust size as needed
+                      className="rounded-full"
+                    />
                   </motion.button>
 
                   <AnimatePresence>
                     {showDropdown && (
                       <motion.div
+                        ref={dropdownRef} // Reference the dropdown menu
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
