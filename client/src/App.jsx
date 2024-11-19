@@ -3,13 +3,13 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Header from './components/Header';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
-import Login from './pages/Login'; // Import Login Page
-import Signup from './pages/SignUp'; // Import Signup Page
+import Login from './pages/Login';
+import Signup from './pages/SignUp';
+import SocialCardPage from './pages/SocialCardPage'; // Import dedicated social card page
 
-// Component to conditionally render the Header
 const ConditionalHeader = ({ children }) => {
-  const location = useLocation(); // Get the current route
-  const noHeaderRoutes = ['/login', '/signup']; // Routes where Header shouldn't appear
+  const location = useLocation();
+  const noHeaderRoutes = ['/login', '/signup'];
 
   return (
     <>
@@ -22,18 +22,15 @@ const ConditionalHeader = ({ children }) => {
 function App() {
   return (
     <Router>
-      {/* <div className="min-h-screen"> */}
-        <ConditionalHeader>
-          {/* <main> */}
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-            </Routes>
-          {/* </main> */}
-        </ConditionalHeader>
-      {/* </div> */}
+      <ConditionalHeader>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/user/:username" element={<SocialCardPage />} /> {/* New Route */}
+        </Routes>
+      </ConditionalHeader>
     </Router>
   );
 }

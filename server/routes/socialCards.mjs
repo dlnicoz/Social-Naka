@@ -7,17 +7,14 @@ const router = express.Router();
 // Create a new social card
 router.post('/', verify, async (req, res) => {
   try {
+    const existingCard = await SocialCard.findOne({ userId: req.user._id });
+    if (existingCard) return res.status(400).json({ message: 'User already has a social card' });
+
     const { name, profession, location, profileUrl, phone, description, theme, socialLinks } = req.body;
 
-    // Check if the user already has a card
-    const existingCard = await SocialCard.findOne({ userId: req.user._id });
-    if (existingCard) {
-      return res.status(400).json({ error: 'You already have a social card. Please edit your existing card.' });
-    }
-
-    // Create a new social card
     const newCard = new SocialCard({
-      userId: req.user._id, // Extracted from the verified token
+      userId: req.user._id,
+      username: req.user.username, // Save the username for sharable links
       name,
       profession,
       location,
@@ -34,6 +31,7 @@ router.post('/', verify, async (req, res) => {
     res.status(400).json({ error: 'Error creating card', details: err.message });
   }
 });
+
 
 // Fetch all social cards (Public)
 router.get('/', async (req, res) => {
@@ -91,6 +89,18 @@ router.get('/me', verify, async (req, res) => {
     res.status(500).json({ error: 'Error fetching social card', details: err.message });
   }
 });
+
+// Fetch social card by username dedicated link
+router.get('/user/:username', async (req, res) => {
+  try {
+    const card = await SocialCard.findOne({ username: req.params.username });
+    if (!card) return res.status(404).json({ message: 'No social card found' });
+    res.status(200).json(card);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching social card', details: err.message });
+  }
+});
+
 
 
 export default router;

@@ -2,69 +2,74 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link as LinkIcon, Settings, Home, LogOut } from 'lucide-react';
-import Avvvatars from 'avvvatars-react'; // Import Avvvatars
+import Avvvatars from 'avvvatars-react'; // Avatar generation
 import { cn } from '../lib/utils';
+import axios from 'axios'; // For fetching social card info
 
 export default function Header() {
-  const [searchQuery, setSearchQuery] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
-  const [showDropdown, setShowDropdown] = useState(false); // Track dropdown visibility
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Track mobile menu visibility
-  const location = useLocation(); // Get the current location (path)
-  
-  const dropdownRef = useRef(null); // Reference for the dropdown menu
-  const profileButtonRef = useRef(null); // Reference for the profile button
-  const dropdownTimerRef = useRef(null); // Timer reference for the auto-hide feature
+  const [showDropdown, setShowDropdown] = useState(false); // Dropdown visibility
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu visibility
+  const [hasSocialCard, setHasSocialCard] = useState(false); // Social card existence
+  const location = useLocation(); // Current path
 
-  // Check login state on mount
+  const dropdownRef = useRef(null); // Reference for dropdown menu
+  const profileButtonRef = useRef(null); // Reference for profile button
+  const dropdownTimerRef = useRef(null); // Timer for auto-hide dropdown
+
+  const userName = localStorage.getItem('username') || 'User'; // Retrieve username
+
+  // Check login state and fetch social card existence
   useEffect(() => {
     const token = localStorage.getItem('auth-token');
-    setIsLoggedIn(!!token); // Convert token existence to boolean
+    setIsLoggedIn(!!token);
+
+    if (token) {
+      axios
+        .get('http://localhost:5000/api/social-cards/me', {
+          headers: { 'auth-token': token },
+        })
+        .then((response) => {
+          if (response.status === 200) setHasSocialCard(true);
+        })
+        .catch(() => setHasSocialCard(false));
+    }
   }, []);
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem('auth-token'); // Remove token
-    setIsLoggedIn(false); // Update state
-    window.location = '/'; // Redirect to homepage
+    localStorage.removeItem('auth-token');
+    setIsLoggedIn(false);
+    window.location = '/';
   };
 
-  // Check if current path is the Dashboard
-  const isDashboard = location.pathname === '/dashboard';
-
-  // Assuming you have the user info in localStorage or from the auth context
-  const userName = localStorage.getItem('username') || 'User'; // Retrieve user name, fallback to 'User'
-
-  // Function to reset the dropdown auto-hide timer
+  // Reset the dropdown auto-hide timer
   const resetDropdownTimer = () => {
-    // Clear any existing timer
     if (dropdownTimerRef.current) {
-      clearTimeout(dropdownTimerRef.current);
+      clearTimeout(dropdownTimerRef.current); // Clear existing timer
     }
-    
-    // Set a new timer to close the dropdown after 2-3 seconds
+    // Set a new timer to close the dropdown after 3 seconds
     dropdownTimerRef.current = setTimeout(() => {
-      setShowDropdown(false); // Hide the dropdown after the delay
-    }, 2000); // You can adjust the time delay here (in milliseconds)
+      setShowDropdown(false); // Hide dropdown
+    }, 3000);
   };
 
   // Show dropdown with auto-hide logic
   const handleProfileClick = () => {
     setShowDropdown((prev) => {
       const newState = !prev;
-      if (newState) {
-        resetDropdownTimer(); // Reset the timer when the dropdown opens
-      }
+      if (newState) resetDropdownTimer(); // Reset the timer when dropdown opens
       return newState;
     });
   };
 
-  // Reset the timer if the dropdown is open and user interacts with it
+  // Reset timer if user interacts with dropdown
   useEffect(() => {
-    if (showDropdown) {
-      resetDropdownTimer();
-    }
+    if (showDropdown) resetDropdownTimer();
   }, [showDropdown]);
+
+  // Check if the current route is the Dashboard
+  const isDashboard = location.pathname === '/dashboard';
 
   return (
     <motion.div
@@ -74,15 +79,14 @@ export default function Header() {
     >
       <header className="max-w-7xl mx-auto bg-white rounded-full border border-gray-200 shadow-lg">
         <nav className="flex items-center justify-between h-20 px-8">
-          {/* Left section */}
+          {/* Left Section */}
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
               <LinkIcon className="h-7 w-7 text-gray-700" />
             </Link>
 
-            {/* Conditionally render Home icon or Settings icon */}
             <Link
-              to={isDashboard ? '/' : '/dashboard'} // Link will change based on route
+              to={isDashboard ? '/' : '/dashboard'}
               className={cn(
                 'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
                 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -94,73 +98,71 @@ export default function Header() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {isDashboard ? (
-                  <Home size={20} /> // Display Home icon when on Dashboard
-                ) : (
-                  <Settings size={20} /> // Display Settings icon when not on Dashboard
-                )}
+                {isDashboard ? <Home size={20} /> : <Settings size={20} />}
               </motion.div>
               <span className="font-medium">{isDashboard ? 'Home' : 'Create'}</span>
             </Link>
+
+            {/* Share Button */}
+            {hasSocialCard && (
+              <Link
+                to={`/user/${userName}`} // Link to user's dedicated page
+                className={cn(
+                  'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
+                  'bg-blue-500 text-white hover:bg-blue-600'
+                )}
+              >
+                Share
+              </Link>
+            )}
           </div>
 
-          {/* Right section */}
+          {/* Right Section */}
           <div className="flex items-center gap-6">
             {isLoggedIn ? (
-              // Profile Section for Logged-in Users
               <div className="flex items-center gap-4">
-                {/* Greeting with the user's name */}
                 <span className="text-xl font-semibold text-gray-800 font-poppins">
                   Hey, {userName}!
                 </span>
 
-                {/* Profile photo */}
-                <div className="relative">
-                  <motion.button
-                    ref={profileButtonRef} // Reference the profile button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleProfileClick} // Toggle dropdown
-                    className="flex items-center rounded-full bg-gray-100 p-2 hover:bg-gray-200"
-                  >
-                    {/* Generate avatar using Avvvatars */}
-                    <Avvvatars
-                      value={userName} // Use the username to generate the avatar
-                      size={32} // Adjust size as needed
-                      className="rounded-full"
-                    />
-                  </motion.button>
+                <motion.button
+                  ref={profileButtonRef}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleProfileClick}
+                  className="flex items-center rounded-full bg-gray-100 p-2 hover:bg-gray-200"
+                >
+                  <Avvvatars value={userName} size={36} className="rounded-full" />
+                </motion.button>
 
-                  <AnimatePresence>
-                    {showDropdown && (
-                      <motion.div
-                        ref={dropdownRef} // Reference the dropdown menu
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                <AnimatePresence>
+                  {showDropdown && (
+                    <motion.div
+                      ref={dropdownRef}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                    >
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setShowDropdown(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <Link
-                          to="/dashboard"
-                          onClick={() => setShowDropdown(false)}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        >
-                          Dashboard
-                        </Link>
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-gray-100"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          <span>Sign Out</span>
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                        Dashboard
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-gray-100"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
-              // Login and Sign Up Buttons for Guests
               <>
                 <Link
                   to="/login"
@@ -171,8 +173,7 @@ export default function Header() {
                 <Link
                   to="/signup"
                   className={cn(
-                    'px-5 py-2.5 text-sm rounded-full font-medium',
-                    'bg-gray-900 text-white hover:bg-gray-800'
+                    'px-5 py-2.5 text-sm rounded-full font-medium bg-gray-900 text-white hover:bg-gray-800'
                   )}
                 >
                   Sign up free
@@ -187,7 +188,7 @@ export default function Header() {
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
           className="md:hidden p-2 text-gray-700"
         >
-          <span className="text-2xl">☰</span> {/* Hamburger icon for mobile */}
+          <span className="text-2xl">☰</span>
         </button>
 
         {/* Mobile Menu */}
@@ -200,13 +201,21 @@ export default function Header() {
               className="md:hidden py-4 bg-white border-t border-gray-200"
             >
               <div className="flex flex-col space-y-4">
-                {/* <Link dont remove this part
+                <Link
                   to="/dashboard"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >
                   Dashboard
-                </Link> */}
+                </Link>
+                {hasSocialCard && (
+                  <Link
+                    to={`/user/${userName}`}
+                    className="block px-4 py-2 text-blue-500 hover:bg-gray-100"
+                  >
+                    Share My Card
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="block px-4 py-2 text-red-600 hover:bg-gray-100"
