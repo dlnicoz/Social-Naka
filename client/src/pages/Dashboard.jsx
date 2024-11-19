@@ -33,7 +33,6 @@ export default function Dashboard() {
       window.location = '/'; // Redirect to login
     }
     setAuthToken(token);
-
     // Fetch the user's social card (if any)
     axios
       .get('http://localhost:5000/api/social-cards/me', {
@@ -97,7 +96,6 @@ export default function Dashboard() {
       : axios.put('http://localhost:5000/api/social-cards/me', formData, {
           headers: { 'auth-token': authToken },
         });
-
     apiCall
       .then((response) => {
         console.log('Card saved:', response.data);
@@ -113,7 +111,6 @@ export default function Dashboard() {
   if (loading) {
     return <div>Loading...</div>; // Show a loading indicator while data is being fetched
   }
-
   return (
     <div className="min-h-screen bg-gray-50 py-12 pt-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -136,7 +133,6 @@ export default function Dashboard() {
             <h2 className="text-xl font-semibold mb-6">
               {isNewCard ? 'Create Your Profile' : 'Edit Your Profile'}
             </h2>
-
             <div className="space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
@@ -205,7 +201,20 @@ export default function Dashboard() {
                   />
                 </div>
               </div>
-
+                {/* Theme Selection */}
+                <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Choose Theme</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {['minimal', 'gradient', 'neon', 'retro'].map((theme) => (
+                    <ThemeCard
+                      key={theme}
+                      theme={theme}
+                      isSelected={formData.theme === theme}
+                      onClick={() => setFormData({ ...formData, theme })}
+                    />
+                  ))}
+                </div>
+              </div>
               {/* Social Links */}
               <div>
                 <div className="flex justify-between items-center mb-4">

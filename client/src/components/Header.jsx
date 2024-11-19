@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link as LinkIcon, Settings, Home, LogOut } from 'lucide-react';
+import { BadgePlus, Home, LogOut, Pencil, Share2 } from 'lucide-react';
+import SocialIcon from '../assets/socialnakaicon.png'
+
 import Avvvatars from 'avvvatars-react'; // Avatar generation
 import { cn } from '../lib/utils';
 import axios from 'axios'; // For fetching social card info
@@ -12,18 +14,14 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu visibility
   const [hasSocialCard, setHasSocialCard] = useState(false); // Social card existence
   const location = useLocation(); // Current path
-
   const dropdownRef = useRef(null); // Reference for dropdown menu
   const profileButtonRef = useRef(null); // Reference for profile button
   const dropdownTimerRef = useRef(null); // Timer for auto-hide dropdown
-
   const userName = localStorage.getItem('username') || 'User'; // Retrieve username
-
   // Check login state and fetch social card existence
   useEffect(() => {
     const token = localStorage.getItem('auth-token');
     setIsLoggedIn(!!token);
-
     if (token) {
       axios
         .get('http://localhost:5000/api/social-cards/me', {
@@ -70,7 +68,6 @@ export default function Header() {
 
   // Check if the current route is the Dashboard
   const isDashboard = location.pathname === '/dashboard';
-
   return (
     <motion.div
       initial={{ y: -100 }}
@@ -82,8 +79,9 @@ export default function Header() {
           {/* Left Section */}
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
-              <LinkIcon className="h-7 w-7 text-gray-700" />
+              <img src={SocialIcon} alt="Social Icon" className="h-11 w-11 text-gray-700" />
             </Link>
+
 
             <Link
               to={isDashboard ? '/' : '/dashboard'}
@@ -98,21 +96,29 @@ export default function Header() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {isDashboard ? <Home size={20} /> : <Settings size={20} />}
+                {isDashboard ? (<Home size={20} />) : hasSocialCard ? (<Pencil size={20} />) : (<BadgePlus size={20} />)}
               </motion.div>
-              <span className="font-medium">{isDashboard ? 'Home' : 'Create'}</span>
+              <span className="font-medium">{isDashboard ? 'Home' : (hasSocialCard ? 'edit' : 'create')}</span>
             </Link>
-
             {/* Share Button */}
             {hasSocialCard && (
               <Link
                 to={`/user/${userName}`} // Link to user's dedicated page
                 className={cn(
                   'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
-                  'bg-blue-500 text-white hover:bg-blue-600'
+                  'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 )}
               >
-                Share
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Share2 size={20} />
+                </motion.div>
+
+                <span className="font-medium">share</span>
               </Link>
             )}
           </div>
@@ -124,43 +130,43 @@ export default function Header() {
                 <span className="text-xl font-semibold text-gray-800 font-poppins">
                   Hey, {userName}!
                 </span>
-
-                <motion.button
-                  ref={profileButtonRef}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleProfileClick}
-                  className="flex items-center rounded-full bg-gray-100 p-2 hover:bg-gray-200"
-                >
-                  <Avvvatars value={userName} size={36} className="rounded-full" />
-                </motion.button>
-
-                <AnimatePresence>
-                  {showDropdown && (
-                    <motion.div
-                      ref={dropdownRef}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
-                    >
-                      <Link
-                        to="/dashboard"
-                        onClick={() => setShowDropdown(false)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                <div className="relative">
+                  <motion.button
+                    ref={profileButtonRef}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleProfileClick}
+                    className="flex items-center rounded-full bg-gray-100 p-2 hover:bg-gray-200"
+                  >
+                    <Avvvatars value={userName} size={36} className="rounded-full" />
+                  </motion.button>
+                  <AnimatePresence>
+                    {showDropdown && (
+                      <motion.div
+                        ref={dropdownRef}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
                       >
-                        Dashboard
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-gray-100"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setShowDropdown(false)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Dashboard
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-gray-100"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             ) : (
               <>
