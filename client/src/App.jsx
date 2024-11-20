@@ -9,11 +9,14 @@ import SocialCardPage from './pages/SocialCardPage'; // Import dedicated social 
 
 const ConditionalHeader = ({ children }) => {
   const location = useLocation();
-  const noHeaderRoutes = ['/login', '/signup'];
+  // List of paths where the header should NOT be shown
+  const noHeaderRoutes = ['/login', '/signup', '/user/:username'];
+  // Check if the current route should not show the header
+  const shouldShowHeader = !noHeaderRoutes.some(route => location.pathname.includes(route));
 
   return (
     <>
-      {!noHeaderRoutes.includes(location.pathname) && <Header />}
+      {shouldShowHeader && <Header />}
       {children}
     </>
   );

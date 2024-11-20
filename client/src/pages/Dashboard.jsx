@@ -91,11 +91,13 @@ export default function Dashboard() {
 
     const apiCall = isNewCard
       ? axios.post('http://localhost:5000/api/social-cards', formData, {
-          headers: { 'auth-token': authToken },
-        })
+        headers: { 'auth-token': authToken },
+      })
       : axios.put('http://localhost:5000/api/social-cards/me', formData, {
-          headers: { 'auth-token': authToken },
-        });
+        headers: { 'auth-token': authToken },
+      });
+
+
     apiCall
       .then((response) => {
         console.log('Card saved:', response.data);
@@ -107,6 +109,7 @@ export default function Dashboard() {
         alert('Failed to save the card. Please check the required fields.');
       });
   };
+
 
   if (loading) {
     return <div>Loading...</div>; // Show a loading indicator while data is being fetched
@@ -201,8 +204,8 @@ export default function Dashboard() {
                   />
                 </div>
               </div>
-                {/* Theme Selection */}
-                <div>
+              {/* Theme Selection */}
+              <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Choose Theme</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {['minimal', 'gradient', 'neon', 'retro'].map((theme) => (
