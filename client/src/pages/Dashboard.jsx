@@ -30,7 +30,7 @@ export default function Dashboard() {
     const token = localStorage.getItem('auth-token');
     if (!token) {
       alert('You need to log in to access the dashboard.');
-      window.location = '/'; // Redirect to login
+      window.location = '/login'; // Redirect to login
     }
     setAuthToken(token);
     // Fetch the user's social card (if any)

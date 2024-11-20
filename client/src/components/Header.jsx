@@ -103,6 +103,8 @@ export default function Header() {
             {/* Share Button */}
             {hasSocialCard && (
               <Link
+                target="_blank"
+                 rel="noopener noreferrer"
                 to={`/user/${userName}`} // Link to user's dedicated page
                 className={cn(
                   'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',

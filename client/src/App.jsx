@@ -1,3 +1,4 @@
+// App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
@@ -10,9 +11,9 @@ import SocialCardPage from './pages/SocialCardPage'; // Import dedicated social 
 const ConditionalHeader = ({ children }) => {
   const location = useLocation();
   // List of paths where the header should NOT be shown
-  const noHeaderRoutes = ['/login', '/signup', '/user/:username'];
-  // Check if the current route should not show the header
-  const shouldShowHeader = !noHeaderRoutes.some(route => location.pathname.includes(route));
+  const noHeaderRoutes = ['/login', '/signup'];
+  // Check if the current route should not show the header, and also check if it is a '/user/:username' route
+  const shouldShowHeader = !noHeaderRoutes.some(route => location.pathname.startsWith(route)) && !location.pathname.startsWith('/user/');
 
   return (
     <>
