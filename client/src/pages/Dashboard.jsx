@@ -33,7 +33,8 @@ export default function Dashboard() {
       window.location = '/login'; // Redirect to login
     }
     setAuthToken(token);
-    // Fetch the user's social card (if any)
+
+    // Axios request to fetch user data and social card
     axios
       .get('http://localhost:5000/api/social-cards/me', {
         headers: { 'auth-token': token },
@@ -51,6 +52,47 @@ export default function Dashboard() {
         }
       })
       .finally(() => setLoading(false)); // Stop loading once the request is complete
+
+    // Axios Interceptor for refreshing access token on 401 Unauthorized errors
+    axios.interceptors.response.use(
+      response => response, // Return the response if it's valid
+      async error => {
+        const originalRequest = error.config;
+        if (error.response.status === 401 && !originalRequest._retry) {
+          // Check if the error is due to token expiration
+          originalRequest._retry = true;
+
+          // Get refresh token from localStorage or cookie
+          const refreshToken = localStorage.getItem('refresh-token');
+          if (!refreshToken) {
+            alert('Session expired, please log in again.');
+            window.location = '/login';
+            return Promise.reject(error);
+          }
+
+          // Try to refresh the access token
+          try {
+            const res = await axios.post('http://localhost:5000/api/users/refresh-token', { refreshToken });
+            const newAccessToken = res.data.token;
+
+            // Update the auth token in localStorage
+            localStorage.setItem('auth-token', newAccessToken);
+
+            // Update the Authorization header in the failed request
+            originalRequest.headers['auth-token'] = newAccessToken;
+
+            // Retry the original request with the new token
+            return axios(originalRequest);
+          } catch (err) {
+            console.error('Error refreshing token:', err.message);
+            alert('Session expired, please log in again.');
+            window.location = '/login';
+            return Promise.reject(err);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
   }, []);
 
   // Function to handle adding a new social link
@@ -91,12 +133,11 @@ export default function Dashboard() {
 
     const apiCall = isNewCard
       ? axios.post('http://localhost:5000/api/social-cards', formData, {
-        headers: { 'auth-token': authToken },
-      })
+          headers: { 'auth-token': authToken },
+        })
       : axios.put('http://localhost:5000/api/social-cards/me', formData, {
-        headers: { 'auth-token': authToken },
-      });
-
+          headers: { 'auth-token': authToken },
+        });
 
     apiCall
       .then((response) => {

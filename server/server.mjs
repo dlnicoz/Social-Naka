@@ -5,6 +5,7 @@ import session from 'express-session';
 import cors from 'cors';
 import MongoStore from 'connect-mongo';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';  // Import cookie-parser
 
 dotenv.config();
 
@@ -25,6 +26,9 @@ app.use(cors({
 
 app.use(express.json());
 
+// Cookie parser middleware to parse cookies in the request
+app.use(cookieParser()); // This middleware will parse cookies from the incoming request
+
 // Express session middleware
 app.use(session({
   secret: 'socialnakawillbecomeunicorn',
@@ -33,7 +37,7 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }), // Use MongoDB to store sessions
   cookie: {
     secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
-    httpOnly: true,
+    httpOnly: true, // Prevent access from JS (important for refresh tokens)
     maxAge: 60000 * 60, // 1-hour session expiration
     sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 'None' for cross-site requests, 'Lax' for local development
   },

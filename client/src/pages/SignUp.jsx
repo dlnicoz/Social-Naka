@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Atom } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../utils/axiosInstance'; // Import axios instance
 import AuthSideImage from '../components/AuthSideImage';
 
 const Signup = () => {
@@ -32,15 +32,15 @@ const Signup = () => {
     setUserExists(false);
     setEmailExists(false);
     setPasswordsMatch(true);
-  
+
     if (values.password !== values.confirmPassword) {
       setPasswordsMatch(false);
       setIsSubmitting(false);
       return;
     }
-  
+
     try {
-      const res = await axios.post('http://localhost:5000/api/users/register', values);
+      const res = await axiosInstance.post('/users/register', values); // Use axiosInstance for signup request
       // Save the token and username from the response
       localStorage.setItem('auth-token', res.data.token);
       localStorage.setItem('username', res.data.username);

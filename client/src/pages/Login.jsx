@@ -1,50 +1,50 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Atom } from 'lucide-react';
-import axios from 'axios';
+import axiosInstance from '../utils/axiosInstance'; // Import axios instance
 import AuthSideImage from '../components/AuthSideImage';
 
 const Login = () => {
-    const [values, setValues] = useState({ username: '', password: '' });
-    const [userNotFound, setUserNotFound] = useState(false);
-    const [wrongPassword, setWrongPassword] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [values, setValues] = useState({ username: '', password: '' });
+  const [userNotFound, setUserNotFound] = useState(false);
+  const [wrongPassword, setWrongPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // State for password visibility
-    const [passwordVisible, setPasswordVisible] = useState(false);
+  // State for password visibility
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
-    // Handle input changes
-    const handleChange = (e) => {
-        setValues({ ...values, [e.target.name]: e.target.value });
-    };
+  // Handle input changes
+  const handleChange = (e) => {
+    setValues({ ...values, [e.target.name]: e.target.value });
+  };
 
-    // Handle form submission
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setUserNotFound(false);
-        setWrongPassword(false);
-      
-        try {
-          const res = await axios.post('http://localhost:5000/api/users/login', values);
-          // Save the token and username from the response
-          localStorage.setItem('auth-token', res.data.token);
-          localStorage.setItem('username', res.data.username);
-          alert('Login successful!');
-          window.location = '/dashboard'; // Redirect to dashboard
-        } catch (err) {
-          const error = err.response?.data || 'Unknown error';
-          if (error === 'Username/Email not found') {
-            setUserNotFound(true);
-          } else if (error === 'Invalid password') {
-            setWrongPassword(true);
-          } else {
-            console.error(error);
-          }
-        } finally {
-          setIsSubmitting(false);
-        }
-    };
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setUserNotFound(false);
+    setWrongPassword(false);
+
+    try {
+      const res = await axiosInstance.post('/users/login', values); // Use axiosInstance for login request
+      // Save the token and username from the response
+      localStorage.setItem('auth-token', res.data.token);
+      localStorage.setItem('username', res.data.username);
+      alert('Login successful!');
+      window.location = '/dashboard'; // Redirect to dashboard
+    } catch (err) {
+      const error = err.response?.data || 'Unknown error';
+      if (error === 'Username/Email not found') {
+        setUserNotFound(true);
+      } else if (error === 'Invalid password') {
+        setWrongPassword(true);
+      } else {
+        console.error(error);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
     return (
         <>

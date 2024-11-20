@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     enum: ['avatar1', 'avatar2', 'avatar3', 'avatar4', 'default'], // Predefined avatars
   },
   date: { type: Date, default: Date.now },
+  refreshToken: { type: String, default: null },  // Add field to store the hashed refresh token
 });
 
 export default mongoose.model('User', userSchema);

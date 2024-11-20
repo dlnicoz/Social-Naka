@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BadgePlus, Home, LogOut, Pencil, Share2 } from 'lucide-react';
-import SocialIcon from '../assets/socialnakaicon.png'
-
+import SocialIcon from '../assets/socialnakaicon.png';
 import Avvvatars from 'avvvatars-react'; // Avatar generation
 import { cn } from '../lib/utils';
 import axios from 'axios'; // For fetching social card info
@@ -18,6 +17,7 @@ export default function Header() {
   const profileButtonRef = useRef(null); // Reference for profile button
   const dropdownTimerRef = useRef(null); // Timer for auto-hide dropdown
   const userName = localStorage.getItem('username') || 'User'; // Retrieve username
+
   // Check login state and fetch social card existence
   useEffect(() => {
     const token = localStorage.getItem('auth-token');
@@ -32,13 +32,54 @@ export default function Header() {
         })
         .catch(() => setHasSocialCard(false));
     }
+
+    // Axios Interceptor for refreshing tokens
+    axios.interceptors.response.use(
+      (response) => response, // Return the response if it's valid
+      async (error) => {
+        const originalRequest = error.config;
+        if (error.response.status === 401 && !originalRequest._retry) {
+          // If 401 error occurs due to token expiry
+          originalRequest._retry = true;
+
+          const refreshToken = localStorage.getItem('refresh-token');
+          if (!refreshToken) {
+            alert('Session expired. Please log in again.');
+            window.location = '/login'; // Redirect to login if refresh token is not available
+            return Promise.reject(error);
+          }
+
+          // Try to get a new access token using refresh token
+          try {
+            const res = await axios.post('http://localhost:5000/api/users/refresh-token', { refreshToken });
+            const newAccessToken = res.data.token;
+
+            // Save the new access token in localStorage
+            localStorage.setItem('auth-token', newAccessToken);
+
+            // Update the original request with the new token
+            originalRequest.headers['auth-token'] = newAccessToken;
+
+            // Retry the original request with the new token
+            return axios(originalRequest);
+          } catch (err) {
+            console.error('Error refreshing token:', err.message);
+            alert('Session expired. Please log in again.');
+            window.location = '/login'; // Redirect to login if refreshing the token fails
+            return Promise.reject(err);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
   }, []);
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem('auth-token');
+    localStorage.removeItem('auth-token'); // Remove access token
+    localStorage.removeItem('refresh-token'); // Remove refresh token
     setIsLoggedIn(false);
-    window.location = '/login';
+    window.location = '/login'; // Redirect to login page
   };
 
   // Reset the dropdown auto-hide timer
