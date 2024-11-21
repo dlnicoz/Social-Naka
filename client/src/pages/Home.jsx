@@ -36,11 +36,12 @@ function Home() {
       {/* Pinterest-style Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-          {users.map(user => (
-            <div key={user.id} className="break-inside-avoid">
+          {users.map((user) => (
+            <div key={user._id || user.id} className="break-inside-avoid">
               <SocialCard user={user} />
             </div>
           ))}
+
         </div>
       </div>
     </div>

@@ -205,28 +205,26 @@ export default function Dashboard() {
                   </button>
                 </div>
                 <div className="space-y-4">
-                  {formData.socialLinks.map((link) => (
-                    <div key={link.id} className="flex gap-4 items-start">
+                  {formData.socialLinks.map((link, index) => (
+                    <div key={link.id || index} className="flex gap-4 items-start">
                       <div className="flex-1">
                         <input
                           type="text"
                           placeholder="Platform (e.g., Twitter, GitHub)"
                           value={link.platform}
-                          onChange={(e) =>
-                            updateSocialLink(link.id, 'platform', e.target.value)
-                          }
+                          onChange={(e) => updateSocialLink(link.id || index, 'platform', e.target.value)}
                           className="mb-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
                         <input
                           type="url"
                           placeholder="URL"
                           value={link.url}
-                          onChange={(e) => updateSocialLink(link.id, 'url', e.target.value)}
+                          onChange={(e) => updateSocialLink(link.id || index, 'url', e.target.value)}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
                       </div>
                       <button
-                        onClick={() => removeSocialLink(link.id)}
+                        onClick={() => removeSocialLink(link.id || index)}
                         className="text-red-500 hover:text-red-600"
                       >
                         <X size={20} />
@@ -234,6 +232,7 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
+
               </div>
 
               {/* Save Button */}

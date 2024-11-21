@@ -33,7 +33,7 @@ export default function SocialCard({ user }) {
         />
         <h2 className="text-2xl font-bold mb-1">{user.name}</h2>
         <p className="text-lg mb-2">{user.profession}</p>
-        
+
         {user.description && (
           <p className="text-sm mb-4">{user.description}</p>
         )}
@@ -54,11 +54,11 @@ export default function SocialCard({ user }) {
         </div>
 
         <div className="w-full space-y-3">
-          {user.socialLinks.map((link) => {
+          {user.socialLinks.map((link, index) => { // Use index as a fallback if `id` is missing
             const Icon = iconMap[link.platform.toLowerCase()] || Globe;
             return (
               <a
-                key={link.id}
+                key={link.id || index} // Ensure key is unique
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -75,6 +75,7 @@ export default function SocialCard({ user }) {
               </a>
             );
           })}
+
         </div>
       </div>
     </div>
