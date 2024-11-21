@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Atom } from 'lucide-react';
-import axiosInstance from '../utils/axiosInstance'; // Import axios instance
+import axiosInstance from '../utils/axiosInstance';
 import AuthSideImage from '../components/AuthSideImage';
 
 const Login = () => {
@@ -9,16 +9,12 @@ const Login = () => {
   const [userNotFound, setUserNotFound] = useState(false);
   const [wrongPassword, setWrongPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // State for password visibility
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  // Handle input changes
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -26,12 +22,16 @@ const Login = () => {
     setWrongPassword(false);
 
     try {
-      const res = await axiosInstance.post('/users/login', values); // Use axiosInstance for login request
-      // Save the token and username from the response
-      localStorage.setItem('auth-token', res.data.token);
+      const res = await axiosInstance.post('/users/login', values);
+
+      // Save tokens in storage/cookie
+      localStorage.setItem('auth-token', res.data.accessToken);
+      document.cookie = `refreshToken=${res.data.refreshToken}; path=/; HttpOnly`;
+
       localStorage.setItem('username', res.data.username);
+
       alert('Login successful!');
-      window.location = '/dashboard'; // Redirect to dashboard
+      window.location = '/dashboard';
     } catch (err) {
       const error = err.response?.data || 'Unknown error';
       if (error === 'Username/Email not found') {

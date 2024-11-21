@@ -1,62 +1,48 @@
-// src/utils/axiosInstance.js
 import axios from 'axios';
 
-// Create an instance of axios to configure base URL, headers, etc.
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api', // Replace with your API base URL
-  withCredentials: true, // Allow cookies (for refresh token)
+  baseURL: 'http://localhost:5000/api',
+  withCredentials: true, // Ensure cookies are sent with requests
 });
 
-// Request interceptor: Attach access token to each request
+// Attach access token to every request
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth-token');
     if (token) {
-      config.headers['auth-token'] = token; // Add the access token to the headers
+      config.headers['auth-token'] = token;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor: Handle token expiration and refresh
+// Handle token expiration and refresh token flow
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response; // If no error, return the response
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) { // Check for 401 Unauthorized (token expired)
+
+    if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        // Try to refresh the token using the refresh token stored in the cookie
-        const refreshToken = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('refreshToken='))
-          ?.split('=')[1];
+        const res = await axios.post('http://localhost:5000/api/users/refresh-token', null, {
+          withCredentials: true, // Ensure cookies are sent with the request
+        });
 
-        if (refreshToken) {
-          // Make a request to refresh the access token
-          const res = await axios.post('http://localhost:5000/api/users/refresh-token', { refreshToken });
-          const { token } = res.data;
+        const { token } = res.data;
+        localStorage.setItem('auth-token', token);
 
-          // Update the access token in localStorage
-          localStorage.setItem('auth-token', token);
-
-          // Retry the original request with the new access token
-          originalRequest.headers['auth-token'] = token;
-          return axios(originalRequest); // Retry the original request
-        }
-      } catch (err) {
-        // Handle errors related to refresh token (e.g., expired refresh token)
-        console.error('Error refreshing token:', err);
-        window.location = '/login'; // Redirect to login page if refresh fails
+        originalRequest.headers['auth-token'] = token;
+        return axios(originalRequest);
+      } catch (refreshError) {
+        console.error('Error refreshing token:', refreshError);
+        window.location = '/login';
       }
     }
-    return Promise.reject(error); // If not a 401 error, reject the promise
+
+    return Promise.reject(error);
   }
 );
 

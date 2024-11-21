@@ -3,7 +3,7 @@ import { Plus, X } from 'lucide-react';
 import ThemeCard from '../components/ThemeCard';
 import SocialCard from '../components/SocialCard';
 import { generateUUID } from '../lib/utils';
-import axios from 'axios';
+import axiosInstance from '../utils/axiosInstance';
 
 const defaultUser = {
   name: 'John Doe',
@@ -20,28 +20,16 @@ const defaultUser = {
 };
 
 export default function Dashboard() {
-  const [formData, setFormData] = useState(defaultUser); // Form state
-  const [authToken, setAuthToken] = useState(''); // State for auth token
-  const [loading, setLoading] = useState(true); // State to track loading
-  const [isNewCard, setIsNewCard] = useState(true); // State to track if it's a new card
+  const [formData, setFormData] = useState(defaultUser);
+  const [loading, setLoading] = useState(true);
+  const [isNewCard, setIsNewCard] = useState(true);
 
-  // Fetch auth token on component mount
   useEffect(() => {
-    const token = localStorage.getItem('auth-token');
-    if (!token) {
-      alert('You need to log in to access the dashboard.');
-      window.location = '/login'; // Redirect to login
-    }
-    setAuthToken(token);
-
-    // Axios request to fetch user data and social card
-    axios
-      .get('http://localhost:5000/api/social-cards/me', {
-        headers: { 'auth-token': token },
-      })
+    axiosInstance
+      .get('/social-cards/me')
       .then((response) => {
-        setFormData(response.data); // Populate formData with the fetched card
-        setIsNewCard(false); // Mark as an existing card
+        setFormData(response.data);
+        setIsNewCard(false);
       })
       .catch((error) => {
         if (error.response?.status === 404) {
@@ -51,51 +39,9 @@ export default function Dashboard() {
           alert('An error occurred while fetching your social card.');
         }
       })
-      .finally(() => setLoading(false)); // Stop loading once the request is complete
-
-    // Axios Interceptor for refreshing access token on 401 Unauthorized errors
-    axios.interceptors.response.use(
-      response => response, // Return the response if it's valid
-      async error => {
-        const originalRequest = error.config;
-        if (error.response.status === 401 && !originalRequest._retry) {
-          // Check if the error is due to token expiration
-          originalRequest._retry = true;
-
-          // Get refresh token from localStorage or cookie
-          const refreshToken = localStorage.getItem('refresh-token');
-          if (!refreshToken) {
-            alert('Session expired, please log in again.');
-            window.location = '/login';
-            return Promise.reject(error);
-          }
-
-          // Try to refresh the access token
-          try {
-            const res = await axios.post('http://localhost:5000/api/users/refresh-token', { refreshToken });
-            const newAccessToken = res.data.token;
-
-            // Update the auth token in localStorage
-            localStorage.setItem('auth-token', newAccessToken);
-
-            // Update the Authorization header in the failed request
-            originalRequest.headers['auth-token'] = newAccessToken;
-
-            // Retry the original request with the new token
-            return axios(originalRequest);
-          } catch (err) {
-            console.error('Error refreshing token:', err.message);
-            alert('Session expired, please log in again.');
-            window.location = '/login';
-            return Promise.reject(err);
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
+      .finally(() => setLoading(false));
   }, []);
 
-  // Function to handle adding a new social link
   const addSocialLink = () => {
     setFormData({
       ...formData,
@@ -106,7 +52,6 @@ export default function Dashboard() {
     });
   };
 
-  // Function to remove a social link
   const removeSocialLink = (id) => {
     setFormData({
       ...formData,
@@ -114,7 +59,6 @@ export default function Dashboard() {
     });
   };
 
-  // Function to update social link details
   const updateSocialLink = (id, field, value) => {
     setFormData({
       ...formData,
@@ -124,33 +68,22 @@ export default function Dashboard() {
     });
   };
 
-  // Function to save the card
   const saveCard = () => {
-    if (!authToken) {
-      alert('You are not authenticated. Please log in.');
-      return;
-    }
-
     const apiCall = isNewCard
-      ? axios.post('http://localhost:5000/api/social-cards', formData, {
-          headers: { 'auth-token': authToken },
-        })
-      : axios.put('http://localhost:5000/api/social-cards/me', formData, {
-          headers: { 'auth-token': authToken },
-        });
+      ? axiosInstance.post('/social-cards', formData)
+      : axiosInstance.put('/social-cards/me', formData);
 
     apiCall
       .then((response) => {
         console.log('Card saved:', response.data);
         alert('Social Card Saved Successfully!');
-        setIsNewCard(false); // Mark as an existing card after saving
+        setIsNewCard(false);
       })
       .catch((error) => {
         console.error('Error saving card:', error.response?.data || error.message);
         alert('Failed to save the card. Please check the required fields.');
       });
   };
-
 
   if (loading) {
     return <div>Loading...</div>; // Show a loading indicator while data is being fetched
