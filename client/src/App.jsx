@@ -6,12 +6,15 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Signup from './pages/SignUp';
-import SocialCardPage from './pages/SocialCardPage'; // Import dedicated social card page
+import SocialCardPage from './pages/SocialCardPage';
+import RequestResetPassword from './pages/RequestResetPassword';
+import ResetPassword from './pages/ResetPassword';
+
 
 const ConditionalHeader = ({ children }) => {
   const location = useLocation();
   // List of paths where the header should NOT be shown
-  const noHeaderRoutes = ['/login', '/signup'];
+  const noHeaderRoutes = ['/login', '/signup' , '/request-reset' , '/reset-password'];
   // Check if the current route should not show the header, and also check if it is a '/user/:username' route
   const shouldShowHeader = !noHeaderRoutes.some(route => location.pathname.startsWith(route)) && !location.pathname.startsWith('/user/');
 
@@ -32,6 +35,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/request-reset" element={<RequestResetPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/user/:username" element={<SocialCardPage />} /> {/* New Route */}
         </Routes>
       </ConditionalHeader>
