@@ -4,12 +4,14 @@ import ThemeCard from '../components/ThemeCard';
 import SocialCard from '../components/SocialCard';
 import { generateUUID } from '../lib/utils';
 import axiosInstance from '../utils/axiosInstance';
+import CATEGORIES from '../data/categoriesData';
 
 const defaultUser = {
   name: 'John Doe',
-  profession: 'Software Developer',
-  phone: '+1 234 567 890',
-  location: 'San Francisco, CA',
+  category:'',
+  profession: '',
+  phone: '+91 9922332233',
+  location: 'Chembur, Mumbai',
   description: 'Passionate about creating beautiful web experiences',
   profileUrl: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d',
   theme: 'minimal',
@@ -23,6 +25,8 @@ export default function Dashboard() {
   const [formData, setFormData] = useState(defaultUser);
   const [loading, setLoading] = useState(true);
   const [isNewCard, setIsNewCard] = useState(true);
+  const [filteredProfessions, setFilteredProfessions] = useState([]);
+
 
   useEffect(() => {
     axiosInstance
@@ -41,6 +45,19 @@ export default function Dashboard() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleCategoryChange = (e) => {
+    const selectedCategory = e.target.value;
+    setFormData({ ...formData, category: selectedCategory, profession: '' });
+
+    // Update the professions dropdown
+    const categoryData = CATEGORIES.find((cat) => cat.category === selectedCategory);
+    setFilteredProfessions(categoryData ? categoryData.professions : []);
+  };
+
+  const handleProfessionChange = (e) => {
+    setFormData({ ...formData, profession: e.target.value });
+  };
 
   const addSocialLink = () => {
     setFormData({
@@ -124,17 +141,41 @@ export default function Dashboard() {
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Profession</label>
-                  <input
-                    type="text"
-                    value={formData.profession}
-                    onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Enter your profession"
-                    required
-                  />
-                </div>
+                {/* Category and Profession Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <select
+                  value={formData.category}
+                  onChange={handleCategoryChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat.category} value={cat.category}>
+                      {cat.category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Profession</label>
+                <select
+                  value={formData.profession}
+                  onChange={handleProfessionChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                  disabled={!filteredProfessions.length}
+                >
+                  <option value="">Select a profession</option>
+                  {filteredProfessions.map((prof) => (
+                    <option key={prof} value={prof}>
+                      {prof}
+                    </option>
+                  ))}
+                </select>
+              </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Phone</label>
                   <input
