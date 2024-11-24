@@ -8,8 +8,8 @@ import CATEGORIES from '../data/categoriesData';
 
 const defaultUser = {
   name: 'John Doe',
-  category:'',
-  profession: '',
+  category: '', // Added category field
+  profession: '', // Added profession field
   phone: '+91 9922332233',
   location: 'Chembur, Mumbai',
   description: 'Passionate about creating beautiful web experiences',
@@ -22,12 +22,12 @@ const defaultUser = {
 };
 
 export default function Dashboard() {
-  const [formData, setFormData] = useState(defaultUser);
-  const [loading, setLoading] = useState(true);
-  const [isNewCard, setIsNewCard] = useState(true);
-  const [filteredProfessions, setFilteredProfessions] = useState([]);
+  const [formData, setFormData] = useState(defaultUser); // State for form data
+  const [loading, setLoading] = useState(true); // State to track loading
+  const [isNewCard, setIsNewCard] = useState(true); // State to check if card is new
+  const [filteredProfessions, setFilteredProfessions] = useState([]); // State for filtered professions
 
-
+  // Fetch user data on component mount
   useEffect(() => {
     axiosInstance
       .get('/social-cards/me')
@@ -46,6 +46,7 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Handle category change
   const handleCategoryChange = (e) => {
     const selectedCategory = e.target.value;
     setFormData({ ...formData, category: selectedCategory, profession: '' });
@@ -55,10 +56,12 @@ export default function Dashboard() {
     setFilteredProfessions(categoryData ? categoryData.professions : []);
   };
 
+  // Handle profession change
   const handleProfessionChange = (e) => {
     setFormData({ ...formData, profession: e.target.value });
   };
 
+  // Add a new social link
   const addSocialLink = () => {
     setFormData({
       ...formData,
@@ -69,6 +72,7 @@ export default function Dashboard() {
     });
   };
 
+  // Remove a social link
   const removeSocialLink = (id) => {
     setFormData({
       ...formData,
@@ -76,6 +80,7 @@ export default function Dashboard() {
     });
   };
 
+  // Update social link details
   const updateSocialLink = (id, field, value) => {
     setFormData({
       ...formData,
@@ -85,6 +90,7 @@ export default function Dashboard() {
     });
   };
 
+  // Save the social card
   const saveCard = () => {
     const apiCall = isNewCard
       ? axiosInstance.post('/social-cards', formData)
@@ -103,8 +109,9 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div>Loading...</div>; // Show a loading indicator while data is being fetched
+    return <div>Loading...</div>; // Show loading indicator while fetching data
   }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 pt-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -130,6 +137,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
+                {/* Name Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
                   <input
@@ -141,41 +149,45 @@ export default function Dashboard() {
                     required
                   />
                 </div>
-                {/* Category and Profession Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Category</label>
-                <select
-                  value={formData.category}
-                  onChange={handleCategoryChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select a category</option>
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat.category} value={cat.category}>
-                      {cat.category}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Profession</label>
-                <select
-                  value={formData.profession}
-                  onChange={handleProfessionChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                  disabled={!filteredProfessions.length}
-                >
-                  <option value="">Select a profession</option>
-                  {filteredProfessions.map((prof) => (
-                    <option key={prof} value={prof}>
-                      {prof}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                {/* Category Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Category</label>
+                  <select
+                    value={formData.category}
+                    onChange={handleCategoryChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select a category</option>
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat.category} value={cat.category}>
+                        {cat.category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Profession Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Profession</label>
+                  <select
+                    value={formData.profession}
+                    onChange={handleProfessionChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                    disabled={!filteredProfessions.length}
+                  >
+                    <option value="">Select a profession</option>
+                    {filteredProfessions.map((prof) => (
+                      <option key={prof} value={prof}>
+                        {prof}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Phone Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Phone</label>
                   <input
@@ -186,6 +198,8 @@ export default function Dashboard() {
                     placeholder="Enter your phone number"
                   />
                 </div>
+
+                {/* Location Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Location</label>
                   <input
@@ -197,6 +211,8 @@ export default function Dashboard() {
                     required
                   />
                 </div>
+
+                {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Description</label>
                   <textarea
@@ -207,6 +223,8 @@ export default function Dashboard() {
                     placeholder="Write a brief description about yourself"
                   />
                 </div>
+
+                {/* Profile Image URL */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Profile Image URL</label>
                   <input
@@ -219,6 +237,7 @@ export default function Dashboard() {
                   />
                 </div>
               </div>
+
               {/* Theme Selection */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Choose Theme</h3>
@@ -233,6 +252,7 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
+
               {/* Social Links */}
               <div>
                 <div className="flex justify-between items-center mb-4">
@@ -273,7 +293,6 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-
               </div>
 
               {/* Save Button */}

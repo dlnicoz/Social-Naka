@@ -7,6 +7,7 @@ const socialCardSchema = new mongoose.Schema({
     required: true,
   },
   name: { type: String, required: true },
+  category: { type: String, required: true },
   profession: { type: String, required: true },
   location: { type: String, required: true },
   profileUrl: { type: String, required: true },

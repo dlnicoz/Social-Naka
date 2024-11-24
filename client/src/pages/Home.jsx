@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import SocialCard from '../components/SocialCard';
+import CategorySlider from '../components/CategorySlider';
 
 function Home() {
   const [users, setUsers] = useState([]);
@@ -14,10 +15,12 @@ function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 ">
       {/* Hero Section */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center pt-40">
+      
+      <div className="bg-white border-b pt-16">
+      <CategorySlider />
+        {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center ">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Connect Your Digital World
           </h1>
@@ -30,7 +33,7 @@ function Home() {
           >
             Create Your Hub
           </Link>
-        </div>
+        </div> */}
       </div>
 
       {/* Pinterest-style Grid */}

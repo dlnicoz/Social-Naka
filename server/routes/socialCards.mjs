@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import SocialCard from '../models/SocialCards.mjs';
 import User from '../models/Users.mjs';
 import verify from '../middleware/verifyToken.mjs'; // Middleware to verify JWT
@@ -15,12 +16,13 @@ router.post('/', verify, async (req, res) => {
       return res.status(400).json({ message: 'User already has a social card' });
     }
 
-    const { name, profession, location, profileUrl, phone, description, theme, socialLinks } = req.body;
+    const { name, category, profession, location, profileUrl, phone, description, theme, socialLinks } = req.body;
 
     const newCard = new SocialCard({
       userId: req.user._id,
       username: req.user.username, // Save the username for sharable links
       name,
+      category,
       profession,
       location,
       profileUrl,
@@ -38,66 +40,21 @@ router.post('/', verify, async (req, res) => {
 });
 
 /**
- * Fetch all social cards (Public)
+ * Fetch all social cards or filter by category (Public)
  */
 router.get('/', async (req, res) => {
   try {
-    const cards = await SocialCard.find();
+    const { category } = req.query; // Get category from query parameters
+    let filter = {};
+
+    if (category) {
+      filter.category = category; // Filter by category if provided
+    }
+
+    const cards = await SocialCard.find(filter);
     res.status(200).json(cards);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching cards', details: err.message });
-  }
-});
-
-
-// PUT /me route (move this ABOVE /:id route)
-router.put('/me', verify, async (req, res) => {
-  try {
-    const userId = req.user._id;
-
-    let socialCard = await SocialCard.findOne({ userId });
-
-    if (socialCard) {
-      // Update the existing card
-      socialCard = await SocialCard.findOneAndUpdate(
-        { userId },
-        req.body,
-        { new: true } // Return updated document
-      );
-      return res.status(200).json(socialCard);
-    } else {
-      // Create a new social card if none exists
-      const newSocialCard = new SocialCard({
-        userId,
-        ...req.body,
-      });
-      await newSocialCard.save();
-      return res.status(201).json(newSocialCard);
-    }
-  } catch (err) {
-    console.error('Error updating or creating social card:', err);
-    res.status(500).json({ message: 'Error updating or creating social card', details: err.message });
-  }
-});
-
-
-/**
- * Delete a social card
- */
-router.delete('/:id', verify, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Check if the card belongs to the logged-in user
-    const card = await SocialCard.findOne({ _id: id, userId: req.user._id });
-    if (!card) {
-      return res.status(404).json({ error: 'Card not found or not authorized to delete.' });
-    }
-
-    await SocialCard.findByIdAndDelete(id);
-    res.status(200).json({ message: 'Card deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ error: 'Error deleting card', details: err.message });
   }
 });
 
@@ -139,8 +96,9 @@ router.get('/user/:username', async (req, res) => {
   }
 });
 
-
-// PUT /:id route (add validation for ObjectId)
+/**
+ * Update a social card by ID
+ */
 router.put('/:id', verify, async (req, res) => {
   const { id } = req.params;
 
@@ -163,6 +121,58 @@ router.put('/:id', verify, async (req, res) => {
   } catch (err) {
     console.error('Error updating card using id:', err);
     res.status(500).json({ error: 'Error updating card using id', details: err.message });
+  }
+});
+
+/**
+ * Update or create social card for the logged-in user
+ */
+router.put('/me', verify, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    let socialCard = await SocialCard.findOne({ userId });
+
+    if (socialCard) {
+      // Update the existing card
+      socialCard = await SocialCard.findOneAndUpdate(
+        { userId },
+        req.body,
+        { new: true } // Return updated document
+      );
+      return res.status(200).json(socialCard);
+    } else {
+      // Create a new social card if none exists
+      const newSocialCard = new SocialCard({
+        userId,
+        ...req.body,
+      });
+      await newSocialCard.save();
+      return res.status(201).json(newSocialCard);
+    }
+  } catch (err) {
+    console.error('Error updating or creating social card:', err);
+    res.status(500).json({ message: 'Error updating or creating social card', details: err.message });
+  }
+});
+
+/**
+ * Delete a social card by ID
+ */
+router.delete('/:id', verify, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the card belongs to the logged-in user
+    const card = await SocialCard.findOne({ _id: id, userId: req.user._id });
+    if (!card) {
+      return res.status(404).json({ error: 'Card not found or not authorized to delete.' });
+    }
+
+    await SocialCard.findByIdAndDelete(id);
+    res.status(200).json({ message: 'Card deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error deleting card', details: err.message });
   }
 });
 
