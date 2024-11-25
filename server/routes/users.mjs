@@ -216,6 +216,37 @@ router.get('/validate-reset-token', async (req, res) => {
   }
 });
 
+// get in touch route
+router.post('/contact', async (req, res) => {
+  const { email, name, phone } = req.body; // Extract name and phone from the request body
+
+  try {
+    // Use nodemailer to send an email to the admin
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USER, // Admin email
+        pass: process.env.EMAIL_PASS, // Admin email password
+      },
+    });
+
+    const mailOptions = {
+      from: email,
+      to: process.env.EMAIL_USER, // Admin email
+      subject: 'Get in Touch Request',
+      text: `A user has requested to get in touch.\n\nUser details:\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Contact request sent successfully' });
+  } catch (error) {
+    console.error('Error sending contact email:', error.message);
+    res.status(500).json({ message: 'Error sending contact email' });
+  }
+});
+
+
 
 
 export default router;

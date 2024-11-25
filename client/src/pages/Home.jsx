@@ -3,9 +3,17 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import SocialCard from '../components/SocialCard';
 import CategorySlider from '../components/CategorySlider';
+import Footer from '../components/Footer'
 
 function Home() {
   const [users, setUsers] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check login status
+  useEffect(() => {
+    const token = localStorage.getItem('auth-token');
+    setIsLoggedIn(!!token); // If token exists, user is logged in
+  }, []);
 
   // Fetch users on component mount
   useEffect(() => {
@@ -15,6 +23,7 @@ function Home() {
   }, []);
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50 ">
       {/* Hero Section */}
       
@@ -48,6 +57,8 @@ function Home() {
         </div>
       </div>
     </div>
+    <Footer isLoggedIn={isLoggedIn} />
+    </>
   );
 }
 
