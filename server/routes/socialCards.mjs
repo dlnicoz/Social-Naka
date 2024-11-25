@@ -39,16 +39,19 @@ router.post('/', verify, async (req, res) => {
   }
 });
 
-/**
- * Fetch all social cards or filter by category (Public)
- */
+//  * Fetch all social cards or filter by category (Public)
+
 router.get('/', async (req, res) => {
   try {
-    const { category } = req.query; // Get category from query parameters
+    const { category, search } = req.query;
     let filter = {};
 
     if (category) {
-      filter.category = category; // Filter by category if provided
+      filter.category = category;
+    }
+
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' }; // Case-insensitive search
     }
 
     const cards = await SocialCard.find(filter);
@@ -57,6 +60,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Error fetching cards', details: err.message });
   }
 });
+
 
 /**
  * Fetch the user's social card

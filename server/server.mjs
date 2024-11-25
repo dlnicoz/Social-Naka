@@ -46,9 +46,10 @@ app.use(session({
 // Rate limiting to prevent abuse
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 1000, // Increase the limit to 1000 requests per 15 minutes per IP address
   message: 'Too many requests, please try again later.',
 });
+
 
 app.use(limiter);
 

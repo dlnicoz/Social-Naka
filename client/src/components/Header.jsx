@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BadgePlus, Home, LogOut, Pencil, Share2 } from 'lucide-react';
+import { BadgePlus, Home, LogOut, Pencil, Share2, Search } from 'lucide-react'; // Added Search icon
 import SocialIcon from '../assets/socialnakaicon.png';
 import Avvvatars from 'avvvatars-react'; // Avatar generation
 import { cn } from '../lib/utils';
@@ -12,7 +12,10 @@ export default function Header() {
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown visibility
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu visibility
   const [hasSocialCard, setHasSocialCard] = useState(false); // Social card existence
+  const [isSearchVisible, setIsSearchVisible] = useState(false); // Toggle search visibility
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // Track search bar visibility state
   const location = useLocation(); // Current path
+  const isExplore = location.pathname === '/explore'; // Check if on explore page
   const dropdownRef = useRef(null); // Reference for dropdown menu
   const profileButtonRef = useRef(null); // Reference for profile button
   const dropdownTimerRef = useRef(null); // Timer for auto-hide dropdown
@@ -72,7 +75,7 @@ export default function Header() {
         return Promise.reject(error);
       }
     );
-  }, []);
+  }, [location.pathname]);
 
   // Handle logout
   const handleLogout = () => {
@@ -105,10 +108,13 @@ export default function Header() {
   // Reset timer if user interacts with dropdown
   useEffect(() => {
     if (showDropdown) resetDropdownTimer();
+    if (isExplore) setIsSearchOpen(true)
+    else setIsSearchOpen(false)
   }, [showDropdown]);
 
   // Check if the current route is the Dashboard
   const isDashboard = location.pathname === '/dashboard';
+
   return (
     <motion.div
       initial={{ y: -100 }}
@@ -123,46 +129,93 @@ export default function Header() {
               <img src={SocialIcon} alt="Social Icon" className="h-11 w-11 text-gray-700" />
             </Link>
 
+            {/* Conditionally Hide Buttons on Explore Page */}
+            {!isExplore && (
+              <>
+                <Link
+                  to={isDashboard ? '/' : '/dashboard'}
+                  className={cn(
+                    'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
+                    'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  )}
+                >
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {isDashboard ? (
+                      <Home size={20} />
+                    ) : hasSocialCard ? (
+                      <Pencil size={20} />
+                    ) : (
+                      <BadgePlus size={20} />
+                    )}
+                  </motion.div>
+                  <span className="font-medium">
+                    {isDashboard ? 'Home' : hasSocialCard ? 'Edit' : 'Create'}
+                  </span>
+                </Link>
 
+
+                {hasSocialCard && (
+                  <Link
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    to={`/user/${userName}`}
+                    className={cn(
+                      'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-300', // Slower transitions
+                      'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    )}
+                  >
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.5 }} // Smoother transition
+                    >
+                      <Share2 size={20} />
+                    </motion.div>
+                    <span className="font-medium">Share</span>
+                  </Link>
+                )}
+              </>
+            )}
+
+            {/* Explore Button */}
             <Link
-              to={isDashboard ? '/' : '/dashboard'}
+              to="/explore"
               className={cn(
-                'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
-                'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-300', // Slower transitions
+                isExplore ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               )}
             >
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {isDashboard ? (<Home size={20} />) : hasSocialCard ? (<Pencil size={20} />) : (<BadgePlus size={20} />)}
-              </motion.div>
-              <span className="font-medium">{isDashboard ? 'Home' : (hasSocialCard ? 'edit' : 'create')}</span>
+              <Search size={20} />
+              <span className="font-medium">Explore</span>
             </Link>
-            {/* Share Button */}
-            {hasSocialCard && (
-              <Link
-                target="_blank"
-                 rel="noopener noreferrer"
-                to={`/user/${userName}`} // Link to user's dedicated page
-                className={cn(
-                  'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
-                  'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                )}
-              >
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Share2 size={20} />
-                </motion.div>
 
-                <span className="font-medium">share</span>
-              </Link>
+            {/* Search Input */}
+            {isExplore && (
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: '100%' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.5 }} // Smoother transition
+                  className="relative flex-1 ml-2"
+                >
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search username @alex"
+                    className="w-full pl-11 pr-10 py-2.5 text-sm rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300"
+                    autoFocus
+                  />
+                </motion.div>
+              </AnimatePresence>
             )}
           </div>
 
@@ -190,6 +243,7 @@ export default function Header() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.3 }} // Smoother transition
                         className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
                       >
                         <Link
@@ -247,6 +301,7 @@ export default function Header() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.5 }} // Smoother transition
               className="md:hidden py-4 bg-white border-t border-gray-200"
             >
               <div className="flex flex-col space-y-4">

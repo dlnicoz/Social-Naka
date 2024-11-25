@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Explore from './pages/Explore';
 import Signup from './pages/SignUp';
 import SocialCardPage from './pages/SocialCardPage';
 import RequestResetPassword from './pages/RequestResetPassword';
@@ -34,6 +35,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/explore" element={<Explore />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/request-reset" element={<RequestResetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
