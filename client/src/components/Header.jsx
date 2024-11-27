@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation , useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BadgePlus, Home, LogOut, Pencil, Share2, Search } from 'lucide-react'; // Added Search icon
 import SocialIcon from '../assets/socialnakaicon.png';
@@ -20,22 +20,42 @@ export default function Header() {
   const profileButtonRef = useRef(null); // Reference for profile button
   const dropdownTimerRef = useRef(null); // Timer for auto-hide dropdown
   const userName = localStorage.getItem('username') || 'User'; // Retrieve username
+  const navigate = useNavigate(); // Add this to handle navigation
+  const [searchValue, setSearchValue] = useState(''); // Track search input
 
-  // Check login state and fetch social card existence
+  const handleSearch = (event) => {
+    const value = event.target.value;
+    setSearchValue(value);
+    navigate(`/explore?search=${value}`); // Update the Explore page URL with the search query
+  };
+
+  // Fetch user info and check for social card
   useEffect(() => {
-    const token = localStorage.getItem('auth-token');
-    setIsLoggedIn(!!token);
-  
-    if (token) {
-      axios
-        .get('http://localhost:5000/api/social-cards/me', {
-          headers: { 'auth-token': token },
-        })
-        .then((response) => {
-          if (response.status === 200) setHasSocialCard(true);
-        })
-        .catch(() => setHasSocialCard(false));
-    }
+    const fetchSocialCard = async () => {
+      const token = localStorage.getItem('auth-token');
+      setIsLoggedIn(!!token);
+      console.log('[Header] Checking for Social Card. Token Present:', !!token);
+
+      if (token) {
+        try {
+          const response = await axios.get('/social-cards/me', {
+            headers: { 'auth-token': token },
+          });
+          if (response.status === 200) {
+            setHasSocialCard(true);
+            console.log('[Header] Social Card Found:', response.data);
+          }
+        } catch (error) {
+          console.warn('[Header] Error Fetching Social Card:', error);
+          if (error.response?.status === 401) {
+            console.log('[Header] Unauthorized. Social Card Not Found.');
+            setHasSocialCard(false);
+          }
+        }
+      }
+    };
+
+    fetchSocialCard();
   }, [location.pathname]);
   
 
@@ -172,7 +192,9 @@ export default function Header() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search username @alex"
+                    value={searchValue} // Bind input value
+                    onChange={handleSearch} // Call handleSearch on input change
+                    placeholder="Search profession - football coach"
                     className="w-full pl-11 pr-10 py-2.5 text-sm rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300"
                     autoFocus
                   />

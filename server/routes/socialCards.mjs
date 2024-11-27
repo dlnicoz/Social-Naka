@@ -39,27 +39,34 @@ router.post('/', verify, async (req, res) => {
   }
 });
 
-//  * Fetch all social cards or filter by category (Public)
-
+// Filter by category explore page
 router.get('/', async (req, res) => {
   try {
     const { category, search } = req.query;
     let filter = {};
 
+    // Filter by category if provided
     if (category) {
       filter.category = category;
     }
 
+    // Search across multiple fields if search query exists
     if (search) {
-      filter.name = { $regex: search, $options: 'i' }; // Case-insensitive search
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } }, // Match name
+        { profession: { $regex: search, $options: 'i' } }, // Match profession
+        { description: { $regex: search, $options: 'i' } }, // Match description
+      ];
     }
 
+    // Fetch matching social cards
     const cards = await SocialCard.find(filter);
     res.status(200).json(cards);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching cards', details: err.message });
   }
 });
+
 
 
 /**
