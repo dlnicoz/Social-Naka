@@ -18,7 +18,7 @@ export default function CategorySlider() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % categoriesToShow.length);
-    }, 5000); // 5000 ms = 5 seconds
+    }, 500000); // 5000 ms = 5 seconds
 
     return () => {
       clearInterval(interval); // Cleanup interval on unmount or when index changes
@@ -45,7 +45,7 @@ export default function CategorySlider() {
   };
 
   return (
-    <div className="relative py-20 overflow-hidden bg-white">
+    <div className="relative py-20 overflow-hidden bg-[#F7EBE8]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title and Category */}
         <div className="text-center mb-12">

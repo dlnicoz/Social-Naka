@@ -25,6 +25,7 @@ export default function Header() {
   useEffect(() => {
     const token = localStorage.getItem('auth-token');
     setIsLoggedIn(!!token);
+  
     if (token) {
       axios
         .get('http://localhost:5000/api/social-cards/me', {
@@ -35,47 +36,8 @@ export default function Header() {
         })
         .catch(() => setHasSocialCard(false));
     }
-
-    // Axios Interceptor for refreshing tokens
-    axios.interceptors.response.use(
-      (response) => response, // Return the response if it's valid
-      async (error) => {
-        const originalRequest = error.config;
-        if (error.response.status === 401 && !originalRequest._retry) {
-          // If 401 error occurs due to token expiry
-          originalRequest._retry = true;
-
-          const refreshToken = localStorage.getItem('refresh-token');
-          if (!refreshToken) {
-            alert('Session expired. Please log in again.');
-            window.location = '/login'; // Redirect to login if refresh token is not available
-            return Promise.reject(error);
-          }
-
-          // Try to get a new access token using refresh token
-          try {
-            const res = await axios.post('http://localhost:5000/api/users/refresh-token', { refreshToken });
-            const newAccessToken = res.data.token;
-
-            // Save the new access token in localStorage
-            localStorage.setItem('auth-token', newAccessToken);
-
-            // Update the original request with the new token
-            originalRequest.headers['auth-token'] = newAccessToken;
-
-            // Retry the original request with the new token
-            return axios(originalRequest);
-          } catch (err) {
-            console.error('Error refreshing token:', err.message);
-            alert('Session expired. Please log in again.');
-            window.location = '/login'; // Redirect to login if refreshing the token fails
-            return Promise.reject(err);
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
   }, [location.pathname]);
+  
 
   // Handle logout
   const handleLogout = () => {

@@ -2,12 +2,77 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import SocialCard from '../components/SocialCard';
+import { motion } from 'framer-motion';
+import { Instagram, Youtube, Twitter, BarChart, Smartphone, Palette, Link as LinkIcon } from 'lucide-react';
 import CategorySlider from '../components/CategorySlider';
+import { Filter, ArrowLeft, ArrowRight } from 'lucide-react';
 import Footer from '../components/Footer'
+import axiosInstance from '../utils/axiosInstance';
 
 function Home() {
   const [users, setUsers] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [email, setEmail] = useState('');
+  const [userDetails, setUserDetails] = useState({ name: '', phone: '' });
+ 
+
+  // Fetch user details when the component loads
+  useEffect(() => {
+    if (isLoggedIn) {
+      // Simulate fetching user data from local storage or an API
+      const name = localStorage.getItem('username') || 'Guest';
+      const phone = localStorage.getItem('phone') || ''; // Assume `phone` is stored in localStorage
+      setUserDetails({ name, phone });
+    }
+  }, [isLoggedIn]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Send email, name, and phone in the request
+      await axiosInstance.post('/users/contact', {
+        email,
+        name: userDetails.name,
+        phone: userDetails.phone,
+      });
+      setEmail(''); // Clear the email field
+    } catch (error) {
+      console.error('Error sending contact request:', error.message);
+      alert('Failed to send. Please try again later.');
+    }
+  };
+
+
+  const nextTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  };
+
+  const testimonials = [
+    {
+      quote: "I use SocialDeck's analytics to better understand my audience and what converts them.",
+      author: "Luke Kidgell",
+      role: "Comedian",
+      image: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&q=80"
+    },
+    {
+      quote: "This platform has transformed how I connect with my followers across all social networks.",
+      author: "Sarah Chen",
+      role: "Content Creator",
+      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80"
+    },
+    {
+      quote: "The best tool I've found for managing my social media presence effectively.",
+      author: "Marcus Zhang",
+      role: "Digital Artist",
+      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80"
+    }
+  ];
 
   // Check login status
   useEffect(() => {
@@ -26,8 +91,162 @@ function Home() {
     <>
     <div className="min-h-screen bg-gray-50 ">
       {/* Hero Section */}
+      {/* Welcome Section */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-purple-50 to-white pt-32 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-6xl font-bold text-gray-900 mb-6"
+              >
+                Simplify Your Social Connections with SocialNaka!
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-xl text-gray-600 mb-8"
+              >
+                Bring all your social links, events, and content into one beautifully designed page.
+              </motion.p>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="flex gap-4"
+              >
+                <Link
+                  to="/signup"
+                  className="px-8 py-4 bg-purple-600 text-white rounded-full font-semibold hover:bg-purple-700 transition-colors"
+                >
+                  Get Started for Free
+                </Link>
+                <Link
+                  to="/learn-more"
+                  className="px-8 py-4 bg-white text-purple-600 rounded-full font-semibold border-2 border-purple-600 hover:bg-purple-50 transition-colors"
+                >
+                  Learn More
+                </Link>
+              </motion.div>
+            </div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="relative"
+            >
+              <div className="relative w-full h-[600px] bg-gradient-to-tr from-yellow-300 via-lime-300 to-emerald-300 rounded-3xl overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img
+                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9"
+                    alt="Profile Preview"
+                    className="w-48 h-48 object-cover rounded-full border-4 border-white shadow-lg"
+                  />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-8 bg-white/80 backdrop-blur-sm">
+                  <div className="flex justify-center gap-6">
+                    {[Instagram, Youtube, Twitter].map((Icon, index) => (
+                      <Icon key={index} className="w-8 h-8 text-gray-700" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+
       
-      <div className="bg-white border-b pt-16">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-br from-red-900 to-red-950 min-h-screen overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-white space-y-6"
+            >
+              <h1 className="text-5xl sm:text-6xl font-bold leading-tight">
+                Share your Linktree from your Instagram, TikTok, Twitter and other bios
+              </h1>
+              <p className="text-xl text-red-100">
+                Add your unique Linktree URL to all the platforms and places you find your audience. Then use your QR code to drive your offline traffic online.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-white text-red-900 px-8 py-3 rounded-full text-lg font-semibold hover:bg-red-50"
+              >
+                Get started for free
+              </motion.button>
+            </motion.div>
+
+            <div className="relative h-[600px]">
+              images goes here
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Testimonials Section */}
+      <div className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-500 to-green-400 p-1">
+            <div className="relative rounded-[calc(1.5rem-1px)] bg-white p-8 sm:p-12">
+              <div className="flex items-center justify-between">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={prevTestimonial}
+                  className="p-2 rounded-full hover:bg-neutral-100"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </motion.button>
+
+                <motion.div
+                  key={currentTestimonial}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="text-center max-w-3xl mx-auto px-4"
+                >
+                  <h2 className="text-4xl sm:text-5xl font-bold text-neutral-900 mb-6">
+                    {testimonials[currentTestimonial].quote}
+                  </h2>
+                  <div className="flex items-center justify-center space-x-4">
+                    <img
+                      src={testimonials[currentTestimonial].image}
+                      alt={testimonials[currentTestimonial].author}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div className="text-left">
+                      <p className="font-semibold text-neutral-900">
+                        {testimonials[currentTestimonial].author}
+                      </p>
+                      <p className="text-neutral-500">
+                        {testimonials[currentTestimonial].role}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={nextTestimonial}
+                  className="p-2 rounded-full hover:bg-neutral-100"
+                >
+                  <ArrowRight className="w-6 h-6" />
+                </motion.button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="border-b">
       <CategorySlider />
         {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center ">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -56,8 +275,54 @@ function Home() {
 
         </div>
       </div> */}
+    {/* Get in Touch Section */}
+    <div className="bg-purple-900 py-24 relative overflow-hidden">
+        <div className="absolute left-0 top-0 w-1/3 h-full">
+          <div className="w-full h-full bg-cyan-400 transform -skew-x-12"></div>
+        </div>
+        <div className="absolute right-0 bottom-0 w-1/3">
+          <img
+            src="https://images.unsplash.com/photo-1604871000636-074fa5117945?auto=format&fit=crop&q=80"
+            alt="Decorative"
+            className="w-full opacity-50"
+          />
+        </div>
+        {isLoggedIn && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="max-w-3xl">
+            <h2 className="text-5xl sm:text-6xl font-bold text-white mb-8">
+            Get in Touch
+            </h2>
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-4 flex items-center text-neutral-500">
+                    
+                  </span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full pl-24 pr-4 py-4 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-lime-400"
+                  />
+                </div>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                className="px-8 py-4 rounded-xl bg-lime-400 text-purple-900 font-semibold text-lg hover:bg-lime-300 focus:outline-none focus:ring-2 focus:ring-lime-500"
+              >
+                Send
+              </motion.button>
+            </form>
+          </div>
+        </div>
+         )}
+      </div>
     </div>
-    <Footer isLoggedIn={isLoggedIn} />
+    <Footer />
     </>
   );
 }

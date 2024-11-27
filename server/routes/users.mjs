@@ -53,6 +53,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
+
 // Login User
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -73,7 +74,7 @@ router.post('/login', async (req, res) => {
     const accessToken = jwt.sign({ _id: user._id }, jwtSecret, { expiresIn: '15m' });
     const refreshToken = jwt.sign({ _id: user._id }, refreshTokenSecret, { expiresIn: '7d' });
 
-    user.refreshToken = hash(refreshToken);
+    user.refreshToken = hash(refreshToken); // Store securely
     await user.save();
 
     res.cookie('refreshToken', refreshToken, {
@@ -90,6 +91,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
 // Refresh Access Token
 router.post('/refresh-token', async (req, res) => {
   const { refreshToken } = req.cookies; // Get refresh token from cookies
@@ -97,19 +99,20 @@ router.post('/refresh-token', async (req, res) => {
   if (!refreshToken) return res.status(400).json({ message: 'No refresh token provided' });
 
   try {
-    const decoded = jwt.verify(refreshToken, refreshTokenSecret);
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     const user = await User.findById(decoded._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const isValid = bcrypt.compareSync(refreshToken, user.refreshToken);
     if (!isValid) return res.status(403).json({ message: 'Invalid refresh token' });
 
-    const newAccessToken = jwt.sign({ _id: user._id }, jwtSecret, { expiresIn: '15m' });
+    const newAccessToken = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
     res.status(200).json({ token: newAccessToken });
   } catch (err) {
     res.status(403).json({ message: 'Invalid or expired refresh token' });
   }
 });
+
 
 // Router for request password reset
 router.post('/request-reset', async (req, res) => {

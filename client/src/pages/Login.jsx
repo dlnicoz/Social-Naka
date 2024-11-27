@@ -50,7 +50,7 @@ const Login = () => {
     <>
       <div className="flex xl:flex-row relative">
         <div className="absolute top-6 left-6 lg:top-12 lg:left-12 lg:h-6 z-50 flex items-center gap-1">
-          <span className="text-2xl font-bold">SocialNaka</span>
+          <Link to='/'>   <span className="text-2xl font-bold">SocialNaka</span></Link>
           <Atom className="text-blue-400" size={24} />
         </div>
         <div className="relative flex w-full lg:py-[var(--lg)] lg:px-4 xl:p-8 xl:pb-4 xl:w-[calc(100vw-52%)] min-h-screen justify-center">
