@@ -7,7 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Explore from './pages/Explore';
 import Signup from './pages/SignUp';
-import SocialCardPage from './pages/SocialCardPage';
+import Layout from './components/Layout/Layout';
 import RequestResetPassword from './pages/RequestResetPassword';
 import ResetPassword from './pages/ResetPassword';
 
@@ -39,7 +39,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/request-reset" element={<RequestResetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/user/:username" element={<SocialCardPage />} /> {/* New Route */}
+          <Route path="/user/:username" element={<Layout />} /> {/* New Route */}
         </Routes>
       </ConditionalHeader>
     </Router>

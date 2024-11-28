@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import ThemeCard from '../components/ThemeCard';
-import SocialCard from '../components/SocialCard';
+// import SocialCard from '../components/SocialCard';
 import { generateUUID } from '../lib/utils';
 import axiosInstance from '../utils/axiosInstance';
 import CATEGORIES from '../data/categoriesData';
+import  themes  from '../components/themes/themes';
+import SocialCardUp from '../components/SocialCard/SocialCard';
 
 const defaultUser = {
   name: 'John Doe',
@@ -26,6 +28,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true); // State to track loading
   const [isNewCard, setIsNewCard] = useState(true); // State to check if card is new
   const [filteredProfessions, setFilteredProfessions] = useState([]); // State for filtered professions
+  const [currentTheme, setCurrentTheme] = useState('gradient'); // State for theme selection
 
   // Fetch user data on component mount
   useEffect(() => {
@@ -126,7 +129,11 @@ export default function Dashboard() {
           {/* Preview Section */}
           <div className="order-2 lg:order-1">
             <h2 className="text-xl font-semibold mb-4">Preview</h2>
-            <SocialCard user={formData} />
+            <div className="max-w-md mx-auto">
+            {/* <SocialCard user={formData} /> */}
+            <SocialCardUp profile={formData} />
+            </div>
+            
           </div>
 
           {/* Form Section */}
@@ -239,16 +246,21 @@ export default function Dashboard() {
               </div>
 
               {/* Theme Selection */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Choose Theme</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {['minimal', 'gradient', 'neon', 'retro'].map((theme) => (
-                    <ThemeCard
-                      key={theme}
-                      theme={theme}
-                      isSelected={formData.theme === theme}
-                      onClick={() => setFormData({ ...formData, theme })}
-                    />
+              <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg">
+                <h3 className="text-lg font-semibold text-black mb-3">Choose Theme</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.values(themes).map((theme) => (
+                    <button
+                      key={theme.id}
+                      onClick={() => setCurrentTheme(theme.id)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all
+                  ${currentTheme === theme.id
+                          ? 'bg-white/20 text-black ring-2 ring-green-400'
+                          : 'bg-white/10 text-black/80 hover:bg-black/20'
+                        }`}
+                    >
+                      {theme.name}
+                    </button>
                   ))}
                 </div>
               </div>

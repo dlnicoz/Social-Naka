@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SocialCard from './SocialCard';
+import SocialCard from './SocialCard/SocialCard';
 import axiosInstance from '../utils/axiosInstance';
 import CATEGORIES from '../data/categoriesData';
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import SocialCard from '../components/SocialCard';
+import SocialCard from '../components/SocialCard/SocialCard';
 
 export default function SocialCardPage() {
   const { username } = useParams(); // Get username from URL
@@ -24,11 +24,11 @@ export default function SocialCardPage() {
   if (!socialCard) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-6">{socialCard.name}'s Social Hub</h1>
-        <SocialCard user={socialCard} /> {/* Render the social card */}
-      </div>
-    </div>
+    // <div className="min-h-screen bg-gray-50 py-12">
+    //   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    //     <h1 className="text-4xl font-bold text-gray-900 mb-6">{socialCard.name}'s Social Hub</h1>
+        <SocialCard profile={socialCard} />
+    //   </div>
+    // </div>
   );
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import SocialCard from '../components/SocialCard';
+import SocialCard from '../components/SocialCard/SocialCard';
 import CATEGORIES from '../data/categoriesData';
 
 const Explore = () => {
@@ -69,7 +69,7 @@ const Explore = () => {
             ) : users.length > 0 ? (
               users.map((user) => (
                 <div key={user._id || user.id} className="break-inside-avoid">
-                  <SocialCard user={user} />
+                  <SocialCard profile={user} />
                 </div>
               ))
             ) : (
