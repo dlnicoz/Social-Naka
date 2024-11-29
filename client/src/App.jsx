@@ -3,13 +3,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
-import Explore from './pages/Explore';
+// import Explore from './pages/Explore';
 import Signup from './pages/SignUp';
-import Layout from './components/Layout/Layout';
 import RequestResetPassword from './pages/RequestResetPassword';
 import ResetPassword from './pages/ResetPassword';
+import SocialCardFullPage from './pages/SocialCardFullPage';
+import CreateSocialCard from './pages/CreateSocialCard';
 
 
 const ConditionalHeader = ({ children }) => {
@@ -33,13 +33,13 @@ function App() {
       <ConditionalHeader>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<CreateSocialCard />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/explore" element={<Explore />} />
+          {/* <Route path="/explore" element={<Explore />} /> */}
           <Route path="/signup" element={<Signup />} />
           <Route path="/request-reset" element={<RequestResetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/user/:username" element={<Layout />} /> {/* New Route */}
+          <Route path="/user/:username" element={<SocialCardFullPage />} /> {/* New Route */}
         </Routes>
       </ConditionalHeader>
     </Router>

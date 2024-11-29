@@ -5,8 +5,8 @@ import ThemeCard from '../components/ThemeCard';
 import { generateUUID } from '../lib/utils';
 import axiosInstance from '../utils/axiosInstance';
 import CATEGORIES from '../data/categoriesData';
-import themes from '../components/themes/themes';
-import SocialCardUp from '../components/SocialCard/SocialCard';
+import themes from '../components/themes';
+import SocialCardUp from '../components/SocialCard';
 
 const defaultUser = {
   name: 'John Doe',
@@ -280,34 +280,94 @@ export default function Dashboard() {
               </div>
 
               {/* Social Links */}
-              <div className="space-y-4">
-                {formData.socialLinks.map((link) => (
-                  <div key={link.id} className="flex gap-4 items-start">
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        placeholder="Platform (e.g., Twitter, GitHub)"
-                        value={link.platform}
-                        onChange={(e) => updateSocialLink(link.id, 'platform', e.target.value)}
-                        className="mb-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      />
-                      <input
-                        type="url"
-                        placeholder="URL"
-                        value={link.url}
-                        onChange={(e) => updateSocialLink(link.id, 'url', e.target.value)}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      />
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Social Links</h3>
+                  <button
+                    onClick={addSocialLink}
+                    className="flex items-center gap-2 text-sm text-blue-500 hover:text-blue-600"
+                  >
+                    <Plus size={16} />
+                    Add Link
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  {formData.socialLinks.map((link) => (
+                    <div key={link.id} className="flex gap-4 items-start">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="Platform (e.g., Twitter, GitHub)"
+                          value={link.platform}
+                          onChange={(e) =>
+                            updateSocialLink(link.id, 'platform', e.target.value)
+                          }
+                          className="mb-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        <input
+                          type="url"
+                          placeholder="URL"
+                          value={link.url}
+                          onChange={(e) => updateSocialLink(link.id, 'url', e.target.value)}
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />{/* Social Links */}
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Social Links</h3>
+                  <button
+                    onClick={addSocialLink}
+                    className="flex items-center gap-2 text-sm text-blue-500 hover:text-blue-600"
+                  >
+                    <Plus size={16} />
+                    Add Link
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  {formData.socialLinks.map((link) => (
+                    <div key={link.id} className="flex gap-4 items-start">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="Platform (e.g., Twitter, GitHub)"
+                          value={link.platform}
+                          onChange={(e) =>
+                            updateSocialLink(link.id, 'platform', e.target.value)
+                          }
+                          className="mb-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        <input
+                          type="url"
+                          placeholder="URL"
+                          value={link.url}
+                          onChange={(e) => updateSocialLink(link.id, 'url', e.target.value)}
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                      <button
+                        onClick={() => removeSocialLink(link.id)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <X size={20} />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => removeSocialLink(link.id)}
-                      className="text-red-500 hover:text-red-600"
-                    >
-                      <X size={20} />
-                    </button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
+
+              {/* Save Button */}
+                      </div>
+                      <button
+                        onClick={() => removeSocialLink(link.id)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Save Button */}
 
 
               {/* Save Button */}

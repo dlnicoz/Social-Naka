@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Instagram, Youtube, Twitter, BarChart, Smartphone, Palette, Link as LinkIcon } from 'lucide-react';
-import CategorySlider from '../components/CategorySlider';
+// import CategorySlider from '../components/CategorySlider';
 import { Filter, ArrowLeft, ArrowRight } from 'lucide-react';
 import Footer from '../components/Footer'
 import axiosInstance from '../utils/axiosInstance';
@@ -239,7 +239,7 @@ function Home() {
           </div>
         </div>
         <div className="border-b">
-          <CategorySlider />
+          {/* <CategorySlider /> */}
           {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center ">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Connect Your Digital World

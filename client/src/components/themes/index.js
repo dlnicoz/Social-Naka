@@ -1,4 +1,4 @@
-const themes = {
+export const themes = {
   gradient: {
     id: 'gradient',
     name: 'Gradient Dream',
@@ -120,6 +120,3 @@ const themes = {
     textBody: 'text-green-800'
   }
 };
-
-// Exporting the themes object as the default export
-export default themes;

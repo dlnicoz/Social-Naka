@@ -67,8 +67,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-
-
 /**
  * Fetch the user's social card
  */
@@ -108,47 +106,20 @@ router.get('/user/:username', async (req, res) => {
 });
 
 /**
- * Update a social card by ID
- */
-router.put('/:id', verify, async (req, res) => {
-  const { id } = req.params;
-
-  // Validate the ID format
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    console.log(`Invalid ID received: ${id}`);
-    return res.status(400).json({ error: 'Invalid card ID' });
-  }
-
-  try {
-    // Check if the card belongs to the logged-in user
-    const card = await SocialCard.findOne({ _id: id, userId: req.user._id });
-    if (!card) {
-      return res.status(404).json({ error: 'Card not found or not authorized to edit.' });
-    }
-
-    // Update the social card
-    const updatedCard = await SocialCard.findByIdAndUpdate(id, req.body, { new: true });
-    res.status(200).json(updatedCard);
-  } catch (err) {
-    console.error('Error updating card using id:', err);
-    res.status(500).json({ error: 'Error updating card using id', details: err.message });
-  }
-});
-
-/**
- * Update or create social card for the logged-in user
+ * Update or create a social card for the logged-in user
  */
 router.put('/me', verify, async (req, res) => {
   try {
     const userId = req.user._id;
 
+    // Check if the user already has a social card
     let socialCard = await SocialCard.findOne({ userId });
 
     if (socialCard) {
       // Update the existing card
       socialCard = await SocialCard.findOneAndUpdate(
         { userId },
-        req.body,
+        req.body,  // Fields to update
         { new: true } // Return updated document
       );
       return res.status(200).json(socialCard);
@@ -156,7 +127,8 @@ router.put('/me', verify, async (req, res) => {
       // Create a new social card if none exists
       const newSocialCard = new SocialCard({
         userId,
-        ...req.body,
+        username: req.user.username,
+        ...req.body, // Spread the body to use in the new card
       });
       await newSocialCard.save();
       return res.status(201).json(newSocialCard);
