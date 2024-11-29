@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../utils/axiosInstance';  // Import the axios instance for API calls
 import SocialCardForm from '../components/Forms/SocialCardForm';
 import SocialCard from '../components/SocialCard';
+import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';  // Correctly import jwt-decode
 
 function CreateSocialCard() {
@@ -17,10 +18,17 @@ function CreateSocialCard() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [authToken, setAuthToken] = useState(''); // State for auth token
   const [isNewCard, setIsNewCard] = useState(true);  // Track if the card is new or editing an existing one
 
   // Fetch the user's social card data on component mount
   useEffect(() => {
+    const token = localStorage.getItem('auth-token');
+    if (!token) {
+      alert('You need to log in to access the dashboard.');
+      window.location = '/'; // Redirect to login
+    }
+    setAuthToken(token);
     const fetchSocialCard = async () => {
       try {
         setLoading(true);
@@ -50,44 +58,26 @@ function CreateSocialCard() {
     setFormData(updatedData);
   };
 
-  // Decode the JWT to extract user information
-  const decodeJWT = (token) => {
-    try {
-      const decodedToken = jwtDecode(token);  // Use jwt-decode to decode the token
-      console.log('Decoded Token:', decodedToken);  // Log the decoded token for debugging
-      return decodedToken;
-    } catch (error) {
-      console.error('Failed to decode token:', error);
-      return null;
-    }
-  };
 
-  // Retrieve the userId from localStorage or from the decoded token
-  const token = localStorage.getItem('token');
-  let userId = null;
-
-  if (token) {
-    const decodedToken = decodeJWT(token);  // Decode the token to get user details
-    userId = decodedToken?.id;  // Extract userId
-  }
-
-  // Log the userId to check if it's correct
-  console.log('User ID:', userId);
 
   // Save the social card (either create or update)
   const saveCard = () => {
-    if (!userId) {
-      console.error('User ID is null or undefined');
-      alert('User ID is missing. Please log in again.');
-      return;  // Exit if userId is missing
-    }
+    // if (!userId) {
+    //   console.error('User ID is null or undefined');
+    //   alert('User ID is missing. Please log in again.');
+    //   return;  // Exit if userId is missing
+    // }
 
     setLoading(true);  // Start loading while saving
 
     // Check if it's a new card or an existing one
     const apiCall = isNewCard
-      ? axiosInstance.post('/social-cards', formData)  // Create new card if it's new
-      : axiosInstance.put(`/social-cards/${userId}`, formData);  // Use dynamic userId for update
+      ? axios.post('http://localhost:5000/api/social-cards', formData, {
+        headers: { 'auth-token': authToken },
+      })
+      : axios.put('http://localhost:5000/api/social-cards/me', formData, {
+        headers: { 'auth-token': authToken },
+      });  // Use dynamic userId for update
     apiCall
       .then((response) => {
         console.log('Card saved:', response.data);
