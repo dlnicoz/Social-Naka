@@ -2,10 +2,14 @@ import React from 'react';
 import Background from './Background';
 import SocialLinks from './SocialLinks';
 import  themes  from '../themes/themes';
+import { generateUUID } from '../../lib/utils';
 
 function SocialCard({ profile }) {
   const currentTheme = themes[profile.theme] || themes.gradient;
-
+  const socialLinks = profile.socialLinks.map(link => ({
+    ...link,
+    id: link.id || generateUUID(), // Ensure every link has an ID
+  }));
   return (
     <div className={`w-full max-w-md mx-auto relative overflow-hidden rounded-3xl shadow-2xl backdrop-blur-sm ${currentTheme.cardBg}`}>
       <Background theme={currentTheme} />
@@ -36,7 +40,7 @@ function SocialCard({ profile }) {
             {profile.description}
           </p>
 
-          <SocialLinks links={profile.socialLinks} theme={currentTheme} />
+          <SocialLinks links={socialLinks} theme={currentTheme} />
         </div>
       </div>
     </div>

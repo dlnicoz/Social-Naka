@@ -5,7 +5,7 @@ import ThemeCard from '../components/ThemeCard';
 import { generateUUID } from '../lib/utils';
 import axiosInstance from '../utils/axiosInstance';
 import CATEGORIES from '../data/categoriesData';
-import  themes  from '../components/themes/themes';
+import themes from '../components/themes/themes';
 import SocialCardUp from '../components/SocialCard/SocialCard';
 
 const defaultUser = {
@@ -16,7 +16,7 @@ const defaultUser = {
   location: 'Chembur, Mumbai',
   description: 'Passionate about creating beautiful web experiences',
   profileUrl: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d',
-  theme: 'minimal',
+  theme: 'gradient',
   socialLinks: [
     { id: '1', platform: 'GitHub', url: 'https://github.com' },
     { id: '2', platform: 'Twitter', url: 'https://twitter.com' },
@@ -37,6 +37,8 @@ export default function Dashboard() {
       .then((response) => {
         setFormData(response.data);
         setIsNewCard(false);
+        // Ensure the current theme is set based on the fetched data
+        setCurrentTheme(response.data.theme || 'gradient');  // Use default 'gradient' if no theme found
       })
       .catch((error) => {
         if (error.response?.status === 404) {
@@ -49,20 +51,23 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
+
   // Handle category change
   const handleCategoryChange = (e) => {
     const selectedCategory = e.target.value;
     setFormData({ ...formData, category: selectedCategory, profession: '' });
 
-    // Update the professions dropdown
+    // Ensure dropdown resets
     const categoryData = CATEGORIES.find((cat) => cat.category === selectedCategory);
     setFilteredProfessions(categoryData ? categoryData.professions : []);
   };
 
   // Handle profession change
   const handleProfessionChange = (e) => {
-    setFormData({ ...formData, profession: e.target.value });
+    const selectedProfession = e.target.value;
+    setFormData({ ...formData, profession: selectedProfession });
   };
+
 
   // Add a new social link
   const addSocialLink = () => {
@@ -70,10 +75,11 @@ export default function Dashboard() {
       ...formData,
       socialLinks: [
         ...formData.socialLinks,
-        { id: generateUUID(), platform: '', url: '' },
+        { id: generateUUID(), platform: '', url: '' }, // Use generateUUID for unique IDs
       ],
     });
   };
+
 
   // Remove a social link
   const removeSocialLink = (id) => {
@@ -93,6 +99,7 @@ export default function Dashboard() {
     });
   };
 
+
   // Save the social card
   const saveCard = () => {
     const apiCall = isNewCard
@@ -106,6 +113,9 @@ export default function Dashboard() {
         setIsNewCard(false);
       })
       .catch((error) => {
+
+        console.log(formData.socialLinks);
+
         console.error('Error saving card:', error.response?.data || error.message);
         alert('Failed to save the card. Please check the required fields.');
       });
@@ -130,10 +140,10 @@ export default function Dashboard() {
           <div className="order-2 lg:order-1">
             <h2 className="text-xl font-semibold mb-4">Preview</h2>
             <div className="max-w-md mx-auto">
-            {/* <SocialCard user={formData} /> */}
-            <SocialCardUp profile={formData} />
+              {/* <SocialCard user={formData} /> */}
+              <SocialCardUp profile={formData} />
             </div>
-            
+
           </div>
 
           {/* Form Section */}
@@ -252,60 +262,53 @@ export default function Dashboard() {
                   {Object.values(themes).map((theme) => (
                     <button
                       key={theme.id}
-                      onClick={() => setCurrentTheme(theme.id)}
+                      onClick={() => {
+                        setCurrentTheme(theme.id);  // Update the currentTheme state
+                        setFormData({ ...formData, theme: theme.id });  // Update the formData theme to reflect the selected theme
+                      }}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all
-                  ${currentTheme === theme.id
+                      ${currentTheme === theme.id
                           ? 'bg-white/20 text-black ring-2 ring-green-400'
                           : 'bg-white/10 text-black/80 hover:bg-black/20'
                         }`}
                     >
                       {theme.name}
                     </button>
+
                   ))}
                 </div>
               </div>
 
               {/* Social Links */}
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Social Links</h3>
-                  <button
-                    onClick={addSocialLink}
-                    className="flex items-center gap-2 text-sm text-blue-500 hover:text-blue-600"
-                  >
-                    <Plus size={16} />
-                    Add Link
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  {formData.socialLinks.map((link, index) => (
-                    <div key={link.id || index} className="flex gap-4 items-start">
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          placeholder="Platform (e.g., Twitter, GitHub)"
-                          value={link.platform}
-                          onChange={(e) => updateSocialLink(link.id || index, 'platform', e.target.value)}
-                          className="mb-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        />
-                        <input
-                          type="url"
-                          placeholder="URL"
-                          value={link.url}
-                          onChange={(e) => updateSocialLink(link.id || index, 'url', e.target.value)}
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        />
-                      </div>
-                      <button
-                        onClick={() => removeSocialLink(link.id || index)}
-                        className="text-red-500 hover:text-red-600"
-                      >
-                        <X size={20} />
-                      </button>
+              <div className="space-y-4">
+                {formData.socialLinks.map((link) => (
+                  <div key={link.id} className="flex gap-4 items-start">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        placeholder="Platform (e.g., Twitter, GitHub)"
+                        value={link.platform}
+                        onChange={(e) => updateSocialLink(link.id, 'platform', e.target.value)}
+                        className="mb-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
+                      <input
+                        type="url"
+                        placeholder="URL"
+                        value={link.url}
+                        onChange={(e) => updateSocialLink(link.id, 'url', e.target.value)}
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
                     </div>
-                  ))}
-                </div>
+                    <button
+                      onClick={() => removeSocialLink(link.id)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                ))}
               </div>
+
 
               {/* Save Button */}
               <button

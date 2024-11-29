@@ -2,7 +2,7 @@ import React from 'react';
 import  themes  from '../themes/themes';
 
 function PageBackground({ theme = 'gradient' }) {
-  const currentTheme = themes[theme];
+  const currentTheme = themes[theme] || themes['gradient'];
 
   return (
     <div className="fixed inset-0 -z-10">
