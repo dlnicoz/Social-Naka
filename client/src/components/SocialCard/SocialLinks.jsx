@@ -1,16 +1,43 @@
 import React from 'react';
-import { Github, Twitter } from 'lucide-react';
+import { 
+  Globe, 
+  Github, 
+  Twitter, 
+  Linkedin, 
+  Instagram, 
+  Youtube,
+  Dribbble,
+  Palette
+} from 'lucide-react';
+import { socialPlatforms } from '../../data/socialPlatforms';
 
 function SocialLinks({ links, theme }) {
   const getIcon = (platform) => {
-    switch (platform.toLowerCase()) {
+    switch (platform) {
+      case 'website':
+        return <Globe size={24} />;
       case 'github':
         return <Github size={24} />;
       case 'twitter':
         return <Twitter size={24} />;
+      case 'linkedin':
+        return <Linkedin size={24} />;
+      case 'instagram':
+        return <Instagram size={24} />;
+      case 'youtube':
+        return <Youtube size={24} />;
+      case 'dribbble':
+        return <Dribbble size={24} />;
+      case 'behance':
+        return <Palette size={24} />;
       default:
         return null;
     }
+  };
+
+  const getPlatformName = (platformId) => {
+    const platform = socialPlatforms.find(p => p.id === platformId);
+    return platform ? platform.name : platformId;
   };
 
   return (
@@ -27,7 +54,7 @@ function SocialLinks({ links, theme }) {
             {getIcon(link.platform)}
           </span>
           <span className={`font-['Passion_One'] text-xl ${theme.textPrimary}`}>
-            {link.platform.charAt(0).toUpperCase() + link.platform.slice(1)}
+            {getPlatformName(link.platform)}
           </span>
         </a>
       ))}

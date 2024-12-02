@@ -3,7 +3,7 @@ import axiosInstance from '../utils/axiosInstance';  // Import the axios instanc
 import SocialCardForm from '../components/Forms/SocialCardForm';
 import SocialCard from '../components/SocialCard';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode';  // Correctly import jwt-decode
+import { validateForm } from '../utils/formValidation';
 
 function CreateSocialCard() {
   const [formData, setFormData] = useState({
@@ -13,13 +13,16 @@ function CreateSocialCard() {
     profileUrl: "",
     description: "",
     theme: "gradient",
-    socialLinks: []
+    socialLinks: [],
+    category: "",
+    isPublic: true,
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [authToken, setAuthToken] = useState(''); // State for auth token
   const [isNewCard, setIsNewCard] = useState(true);  // Track if the card is new or editing an existing one
+  const [isValid, setIsValid] = useState(false);
 
   // Fetch the user's social card data on component mount
   useEffect(() => {
@@ -29,6 +32,7 @@ function CreateSocialCard() {
       window.location = '/'; // Redirect to login
     }
     setAuthToken(token);
+
     const fetchSocialCard = async () => {
       try {
         setLoading(true);
@@ -53,12 +57,15 @@ function CreateSocialCard() {
     fetchSocialCard(); // Fetch social card data when component mounts
   }, []);  // Empty dependency array means this effect runs once when the component mounts
 
+  useEffect(() => {
+    const { isValid } = validateForm(formData);
+    setIsValid(isValid);
+  }, [formData]);
+
   // Handle form data change
   const handleFormChange = (updatedData) => {
     setFormData(updatedData);
   };
-
-
 
   // Save the social card (either create or update)
   const saveCard = () => {
@@ -67,38 +74,46 @@ function CreateSocialCard() {
     //   alert('User ID is missing. Please log in again.');
     //   return;  // Exit if userId is missing
     // }
+    const { isValid, errors } = validateForm(formData);
+    if (isValid) {
+      // Here you would typically send the data to your backend
+      // Check if it's a new card or an existing one
+      setLoading(true);  // Start loading while saving
+      const apiCall = isNewCard
+        ? axios.post('http://localhost:5000/api/social-cards', formData, {
+          headers: { 'auth-token': authToken },
+        })
+        : axios.put('http://localhost:5000/api/social-cards/me', formData, {
+          headers: { 'auth-token': authToken },
+        });  // Use dynamic userId for update
+      apiCall
+        .then((response) => {
+          console.log('Card saved:', response.data);
+          alert('Social Card Saved Successfully!');
+          setIsNewCard(false);  // Set to false as the card now exists
+          setFormData(response.data);  // Update form data with saved data
+        })
+        .catch((error) => {
+          // Log formData and error for debugging
+          console.log(formData);
+          console.error('Error saving card:', error.response?.data || error.message);
 
-    setLoading(true);  // Start loading while saving
+          if (error.response?.status === 400 && error.response?.data?.error === 'Invalid card ID') {
+            alert('Invalid card ID. Please check the existing card ID if updating.');
+          } else {
+            alert('Failed to save the card. Please check the required fields.');
+          }
+        })
+        .finally(() => {
+          setLoading(false);  // Stop loading once the operation is done
+        });
+      console.log('Form submitted:', formData);
+    } else {
+      console.log('Form validation errors:', errors);
+    }
 
-    // Check if it's a new card or an existing one
-    const apiCall = isNewCard
-      ? axios.post('http://localhost:5000/api/social-cards', formData, {
-        headers: { 'auth-token': authToken },
-      })
-      : axios.put('http://localhost:5000/api/social-cards/me', formData, {
-        headers: { 'auth-token': authToken },
-      });  // Use dynamic userId for update
-    apiCall
-      .then((response) => {
-        console.log('Card saved:', response.data);
-        alert('Social Card Saved Successfully!');
-        setIsNewCard(false);  // Set to false as the card now exists
-        setFormData(response.data);  // Update form data with saved data
-      })
-      .catch((error) => {
-        // Log formData and error for debugging
-        console.log(formData.socialLinks);
-        console.error('Error saving card:', error.response?.data || error.message);
 
-        if (error.response?.status === 400 && error.response?.data?.error === 'Invalid card ID') {
-          alert('Invalid card ID. Please check the existing card ID if updating.');
-        } else {
-          alert('Failed to save the card. Please check the required fields.');
-        }
-      })
-      .finally(() => {
-        setLoading(false);  // Stop loading once the operation is done
-      });
+
   };
 
   return (
@@ -115,10 +130,21 @@ function CreateSocialCard() {
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Form Section */}
           <div className="bg-white rounded-2xl p-6 shadow-xl">
-            <SocialCardForm 
-              data={formData} 
-              onChange={handleFormChange} 
+            <SocialCardForm
+              data={formData}
+              onChange={handleFormChange}
             />
+            {isValid && (
+              <div className="text-center mt-8">
+                <button
+                  onClick={saveCard}
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-all"
+                  disabled={loading}
+                >
+                  {isNewCard ? 'Create Social Card' : 'Update Social Card'}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Preview Section */}
@@ -126,17 +152,6 @@ function CreateSocialCard() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Live Preview</h2>
             <SocialCard profile={formData} />
           </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="text-center mt-8">
-          <button 
-            onClick={saveCard} 
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition-all"
-            disabled={loading}
-          >
-            {isNewCard ? 'Create Social Card' : 'Update Social Card'}
-          </button>
         </div>
       </div>
     </div>

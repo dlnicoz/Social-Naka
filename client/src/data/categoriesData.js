@@ -1,4 +1,4 @@
-const CATEGORIES = [
+const categories = [
     {
       category: "Beauty and Wellness",
       professions: [
@@ -171,5 +171,5 @@ const CATEGORIES = [
     }
   ];
   
-  export default CATEGORIES;
+  export default categories;
   

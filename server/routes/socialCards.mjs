@@ -16,7 +16,7 @@ router.post('/', verify, async (req, res) => {
       return res.status(400).json({ message: 'User already has a social card' });
     }
 
-    const { name, category, profession, location, profileUrl, phone, description, theme, socialLinks } = req.body;
+    const { name, category, profession, location, profileUrl, phone,isPublic, description, theme, socialLinks } = req.body;
 
     const newCard = new SocialCard({
       userId: req.user._id,
@@ -27,6 +27,7 @@ router.post('/', verify, async (req, res) => {
       location,
       profileUrl,
       phone,
+      isPublic,
       description,
       theme,
       socialLinks,

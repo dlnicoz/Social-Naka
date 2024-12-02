@@ -24,26 +24,6 @@ function SocialCardFullPage() {
       <PageBackground theme={currentTheme} />
       
       <div className="relative z-10 min-h-screen py-12 px-4">
-        <div className="max-w-md mx-auto mb-8">
-          <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg">
-            <h3 className="text-lg font-semibold text-white mb-3">Choose Theme</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.values(themes).map((theme) => (
-                <button
-                  key={theme.id}
-                  onClick={() => setCurrentTheme(theme.id)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all
-                    ${currentTheme === theme.id 
-                      ? 'bg-white/20 text-white ring-2 ring-green-400' 
-                      : 'bg-white/10 text-white/80 hover:bg-white/20'
-                    }`}
-                >
-                  {theme.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
         <div className="max-w-md mx-auto">
           <SocialCard profile={profileData} />
         </div>

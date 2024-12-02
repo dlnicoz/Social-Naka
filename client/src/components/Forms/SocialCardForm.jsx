@@ -2,8 +2,11 @@ import React from 'react';
 import { themes } from '../themes';
 import FormField from './FormField';
 import SocialLinksField from './SocialLinksField';
+import CategoryField from './CategoryField';
+import PrivacySettings from './PrivacySettings';
 
 function SocialCardForm({ data, onChange }) {
+  const userName = localStorage.getItem('username') || 'User'; // Retrieve username
   const handleInputChange = (field, value) => {
     onChange({ ...data, [field]: value });
   };
@@ -12,8 +15,29 @@ function SocialCardForm({ data, onChange }) {
     onChange({ ...data, socialLinks: newLinks });
   };
 
+  const handleCategoryChange = (category) => {
+    onChange({ 
+      ...data, 
+      category,
+      profession: '' // Reset profession when category changes
+    });
+  };
+
+  const handlePrivacyToggle = () => {
+    onChange({ ...data, isPublic: !data.isPublic });
+  };
+
+  // Generate a shareable link based on the user's ID or unique identifier
+  const shareableLink = `${window.location.origin}/user/${userName}`;
+
   return (
     <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+      <PrivacySettings 
+        isPublic={data.isPublic}
+        shareableLink={shareableLink}
+        onToggle={handlePrivacyToggle}
+      />
+
       <FormField
         label="Name"
         value={data.name}
@@ -21,11 +45,11 @@ function SocialCardForm({ data, onChange }) {
         placeholder="Your name"
       />
       
-      <FormField
-        label="Profession"
-        value={data.profession}
-        onChange={(value) => handleInputChange('profession', value)}
-        placeholder="Your profession"
+      <CategoryField
+        selectedCategory={data.category}
+        onCategoryChange={handleCategoryChange}
+        selectedProfession={data.profession}
+        onProfessionChange={(value) => handleInputChange('profession', value)}
       />
       
       <FormField
