@@ -1,10 +1,38 @@
-import React, { useState } from 'react';
-import { themes } from '../components/themes';
+import React, { useState , useEffect } from 'react';
 import SocialCard from '../components/SocialCard';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { themes } from '../components/themes';
 import PageBackground from '../components/Layout/PageBackground';
 
 function SocialCardFullPage() {
   const [currentTheme, setCurrentTheme] = useState('gradient');
+  const { username } = useParams(); // Get username from URL
+  const [socialCard, setSocialCard] = useState(null); // Social card state
+  const [error, setError] = useState(null); // Error state
+
+  useEffect(() => {
+    // Fetch the social card by username
+    axios
+      .get(`http://localhost:5000/api/social-cards/user/${username}`)
+      .then((response) => {
+        const fetchedData = response.data;
+        setSocialCard(fetchedData);
+        // if socialData has theme than setTheme to response.data
+        if(fetchedData.theme){
+          setCurrentTheme(fetchedData.theme)
+        }
+
+      })
+      .catch((err) => {
+        console.error('Error fetching social card:', err.response || err.message); // Log the error for debugging
+        setError(err.response?.data?.message || 'Error fetching social card');
+      });
+  }, [username]);
+  
+
+  if (error) return <p className="text-red-500 text-center mt-10">{error}</p>;
+  if (!socialCard) return <p className="text-center mt-10">Loading...</p>;
 
   const profileData = {
     name: "hello 11",
@@ -25,7 +53,7 @@ function SocialCardFullPage() {
       
       <div className="relative z-10 min-h-screen py-12 px-4">
         <div className="max-w-md mx-auto">
-          <SocialCard profile={profileData} />
+          <SocialCard profile={socialCard || profileData} />
         </div>
       </div>
     </div>
