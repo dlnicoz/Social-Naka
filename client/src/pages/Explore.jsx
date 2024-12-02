@@ -7,20 +7,16 @@ import categories from '../data/categoriesData';
 
 const Explore = () => {
   const [users, setUsers] = useState([]);
-  const [selectedCategory, setSelectedCategory] =useState(categories[0]?.category || '');
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]?.category || '');
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const searchQuery = searchParams.get('search') || '';
-    fetchSocialCards(searchQuery, selectedCategory);
-  }, [searchParams, selectedCategory]);
-
+  // Function to fetch social cards based on search query and category
   const fetchSocialCards = async (searchQuery = '', category = '') => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/social-cards?search=${searchQuery}&category=${category}`
+        `http://localhost:5000/api/social-cards?search=${searchQuery}&category=${category}&limit=10`
       );
       setUsers(response.data);
     } catch (error) {
@@ -31,11 +27,21 @@ const Explore = () => {
     }
   };
 
-  // Fetch users on component mount
+  // Effect to fetch social cards when search params or category changes
   useEffect(() => {
-    axios.get('http://localhost:5000/api/social-cards')
-      .then(response => setUsers(response.data))
-      .catch(error => console.error('Error fetching social cards:', error));
+    const searchQuery = searchParams.get('search') || ''; // Get search query from URL params
+    if (searchQuery) {
+      // If there's a search query, fetch based on the query
+      fetchSocialCards(searchQuery, '');
+    } else {
+      // If no search query, fetch based on category selection
+      fetchSocialCards('', selectedCategory);
+    }
+  }, [searchParams, selectedCategory]);
+
+  // Fetch users on initial load
+  useEffect(() => {
+    fetchSocialCards('', selectedCategory); // Default load without search
   }, []);
 
   return (
@@ -43,7 +49,7 @@ const Explore = () => {
       <div className="mt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Category Filters */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex gap-3 overflow-x-auto pb-6  pt-2">
+          <div className="flex gap-3 overflow-x-auto pb-6 pt-2">
             {categories.map((category, index) => (
               <motion.button
                 key={category.category}
@@ -63,7 +69,7 @@ const Explore = () => {
 
         {/* Pinterest-style Grid */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-3 gap-12 space-y-4">
             {loading ? (
               <div className="col-span-full text-center text-gray-600">Loading...</div>
             ) : users.length > 0 ? (

@@ -6,6 +6,7 @@ import SocialIcon from '../assets/socialnakaicon.png';
 import Avvvatars from 'avvvatars-react'; // Avatar generation
 import { cn } from '../lib/utils';
 import axios from 'axios'; // For fetching social card info
+import { useScrollDirection } from './useScrollDirection';
 
 export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
@@ -22,6 +23,7 @@ export default function Header() {
   const userName = localStorage.getItem('username') || 'User'; // Retrieve username
   const navigate = useNavigate(); // Add this to handle navigation
   const [searchValue, setSearchValue] = useState(''); // Track search input
+  const isVisible = useScrollDirection();
 
   const handleSearch = (event) => {
     const value = event.target.value;
@@ -99,9 +101,10 @@ export default function Header() {
 
   return (
     <motion.div
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className="fixed top-6 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8"
+      initial={{ y: 0 }}
+      animate={{ y: isVisible ? 0 : -110 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 pt-6"
     >
       <header className="max-w-7xl mx-auto bg-white rounded-full border border-gray-200 shadow-lg">
         <nav className="flex items-center justify-between h-20 px-8">

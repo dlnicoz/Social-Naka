@@ -12,39 +12,8 @@ import mobileimage from '../assets/singlemobile.jpg'
 function Home() {
   const [users, setUsers] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [email, setEmail] = useState('');
-  const [userDetails, setUserDetails] = useState({ name: '', phone: '' });
-
-
-  // Fetch user details when the component loads
-  useEffect(() => {
-    if (isLoggedIn) {
-      // Simulate fetching user data from local storage or an API
-      const name = localStorage.getItem('username') || 'Guest';
-      const phone = localStorage.getItem('phone') || ''; // Assume `phone` is stored in localStorage
-      setUserDetails({ name, phone });
-    }
-  }, [isLoggedIn]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      // Send email, name, and phone in the request
-      await axiosInstance.post('/users/contact', {
-        email,
-        name: userDetails.name,
-        phone: userDetails.phone,
-      });
-      setEmail(''); // Clear the email field
-    } catch (error) {
-      console.error('Error sending contact request:', error.message);
-      alert('Failed to send. Please try again later.');
-    }
-  };
-
-
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
   };
@@ -52,7 +21,6 @@ function Home() {
   const prevTestimonial = () => {
     setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
-
   const testimonials = [
     {
       quote: "I use SocialDeck's analytics to better understand my audience and what converts them.",
@@ -73,12 +41,6 @@ function Home() {
       image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80"
     }
   ];
-
-  // Check login status
-  useEffect(() => {
-    const token = localStorage.getItem('auth-token');
-    setIsLoggedIn(!!token); // If token exists, user is logged in
-  }, []);
 
   // Fetch users on component mount
   useEffect(() => {
@@ -101,13 +63,13 @@ function Home() {
                 transition={{ delay: 0.2 }}
                 className="relative"
               >
-                
-                    <img
-                      src={mobileimage}
-                      alt="Profile Preview"
-                      className="w-48 h-48 object-cover rounded-full border-4 border-white shadow-lg"
-                    />
-            
+
+                <img
+                  src={mobileimage}
+                  alt="Profile Preview"
+                  className="w-48 h-48 object-cover rounded-full border-4 border-white shadow-lg"
+                />
+
               </motion.div>
               <div>
                 <motion.h1
@@ -255,66 +217,8 @@ function Home() {
           </Link>
         </div> */}
         </div>
-
-        {/* Pinterest-style Grid */}
-        {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-          {users.map((user) => (
-            <div key={user._id || user.id} className="break-inside-avoid">
-              <SocialCard user={user} />
-            </div>
-          ))}
-
-        </div>
-      </div> */}
-        {/* Get in Touch Section */}
-        <div className="bg-purple-900 py-24 relative overflow-hidden">
-          <div className="absolute left-0 top-0 w-1/3 h-full">
-            <div className="w-full h-full bg-cyan-400 transform -skew-x-12"></div>
-          </div>
-          <div className="absolute right-0 bottom-0 w-1/3">
-            <img
-              src="https://images.unsplash.com/photo-1604871000636-074fa5117945?auto=format&fit=crop&q=80"
-              alt="Decorative"
-              className="w-full opacity-50"
-            />
-          </div>
-          {isLoggedIn && (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-              <div className="max-w-3xl">
-                <h2 className="text-5xl sm:text-6xl font-bold text-white mb-8">
-                  Get in Touch
-                </h2>
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-4 flex items-center text-neutral-500">
-
-                      </span>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email"
-                        className="w-full pl-24 pr-4 py-4 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-lime-400"
-                      />
-                    </div>
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    type="submit"
-                    className="px-8 py-4 rounded-xl bg-lime-400 text-purple-900 font-semibold text-lg hover:bg-lime-300 focus:outline-none focus:ring-2 focus:ring-lime-500"
-                  >
-                    Send
-                  </motion.button>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
+        <Footer />
       </div>
-      <Footer />
     </>
   );
 }

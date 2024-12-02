@@ -43,7 +43,7 @@ router.post('/', verify, async (req, res) => {
 // Filter by category explore page
 router.get('/', async (req, res) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, limit = 10 } = req.query;  // Default limit to 10 if not provided
     let filter = {};
 
     // Filter by category if provided
@@ -60,13 +60,15 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    // Fetch matching social cards
-    const cards = await SocialCard.find(filter);
+    // Fetch matching social cards with limit
+    const cards = await SocialCard.find(filter).limit(parseInt(limit));  // Apply limit here
+
     res.status(200).json(cards);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching cards', details: err.message });
   }
 });
+
 
 /**
  * Fetch the user's social card

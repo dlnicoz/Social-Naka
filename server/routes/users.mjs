@@ -221,7 +221,7 @@ router.get('/validate-reset-token', async (req, res) => {
 
 // get in touch route
 router.post('/contact', async (req, res) => {
-  const { email, name, phone } = req.body; // Extract name and phone from the request body
+  const { email, name, phone , message } = req.body; // Extract name and phone from the request body
 
   try {
     // Use nodemailer to send an email to the admin
@@ -237,7 +237,7 @@ router.post('/contact', async (req, res) => {
       from: email,
       to: process.env.EMAIL_USER, // Admin email
       subject: 'Get in Touch Request',
-      text: `A user has requested to get in touch.\n\nUser details:\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}`,
+      text: `A user has requested to get in touch.\n\nUser details:\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'} \n\nMessage : ${message || 'No message provided'} `,
     };
 
     await transporter.sendMail(mailOptions);
