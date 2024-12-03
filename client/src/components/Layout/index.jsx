@@ -14,7 +14,7 @@ function Layout({ children }) {
       <nav className="relative z-10 p-6 backdrop-blur-sm bg-white/10">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-1">
-            <span className="text-2xl font-bold text-white">Linktree</span>
+            <span className="text-2xl font-bold text-white">SocialNaka</span>
             <Sparkles className="text-green-400" size={24} />
           </Link>
           

@@ -20,6 +20,6 @@ export default (req, res, next) => {
     next();
   } catch (err) {
     // Handle invalid or expired token errors
-    return res.status(401).json({ message: 'Access Denied: Invalid or expired token', error: err.message });
+    return res.status(401).json({ message: 'Access Denied: Invalid or expired token while verifying', error: err.message });
   }
 };

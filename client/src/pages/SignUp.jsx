@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Eye, Atom } from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
 import AuthSideImage from '../components/AuthSideImage';
+import { useToast } from '../hooks/useToast'; // Import useToast hook
+import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
 
 const Signup = () => {
   const [values, setValues] = useState({ username: '', email: '', password: '', confirmPassword: '' });
@@ -12,6 +14,7 @@ const Signup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
@@ -31,6 +34,7 @@ const Signup = () => {
     if (values.password !== values.confirmPassword) {
       setPasswordsMatch(false);
       setIsSubmitting(false);
+      addToast('Passwords do not match', 'error'); // Show error toast
       return;
     }
 
@@ -43,16 +47,19 @@ const Signup = () => {
 
       localStorage.setItem('username', res.data.username);
 
-      alert('Registration successful!');
+      addToast('Registration successful!', 'success'); // Show success toast
       window.location = '/dashboard';
     } catch (err) {
       const error = err.response?.data || 'Unknown error';
       if (error === 'Email already exists') {
         setEmailExists(true);
+        addToast('Email already exists', 'error'); // Show error toast
       } else if (error === 'Username already exists') {
         setUserExists(true);
+        addToast('Username already exists', 'error'); // Show error toast
       } else {
         console.error(error);
+        addToast('An unexpected error occurred', 'error'); // Show error toast
       }
     } finally {
       setIsSubmitting(false);
@@ -174,6 +181,9 @@ const Signup = () => {
           overlayColor="bg-amber-50"
         />
       </div>
+
+      {/* Add Toast Container to render toasts */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </>
   );
 };

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Eye, Atom } from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
 import AuthSideImage from '../components/AuthSideImage';
+import { useToast } from '../hooks/useToast'; // Import useToast hook
+import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
 
 const Login = () => {
   const [values, setValues] = useState({ username: '', password: '' });
@@ -10,6 +12,7 @@ const Login = () => {
   const [wrongPassword, setWrongPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
@@ -30,16 +33,20 @@ const Login = () => {
 
       localStorage.setItem('username', res.data.username);
 
-      alert('Login successful!');
+      // Use toast instead of alert
+      addToast('Login successful!', 'success');
       window.location = '/dashboard';
     } catch (err) {
       const error = err.response?.data || 'Unknown error';
       if (error === 'Username/Email not found') {
         setUserNotFound(true);
+        addToast('Username/Email not found', 'error'); // Add error toast
       } else if (error === 'Invalid password') {
         setWrongPassword(true);
+        addToast('Invalid password', 'error'); // Add error toast
       } else {
         console.error(error);
+        addToast('An unexpected error occurred', 'error'); // Add generic error toast
       }
     } finally {
       setIsSubmitting(false);
@@ -137,6 +144,9 @@ const Login = () => {
           overlayColor="bg-purple-100"
         />
       </div>
+
+      {/* Add Toast Container to render toasts */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </>
   );
 };

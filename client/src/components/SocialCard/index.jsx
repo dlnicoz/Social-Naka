@@ -21,10 +21,10 @@ function SocialCard({ profile }) {
           </div>
           
           <div className="space-y-2">
-            <h2 className={`text-5xl font-['Passion_One'] ${currentTheme.textPrimary}`}>
+            <h2 className={`text-5xl ${currentTheme.textPrimary}`}>
               {profile.name}
             </h2>
-            <p className={`text-xl font-medium ${currentTheme.textSecondary}`}>
+            <p className={`text-xl ${currentTheme.textSecondary}`}>
               {profile.profession}
             </p>
             <p className={`text-lg ${currentTheme.textBody}`}>

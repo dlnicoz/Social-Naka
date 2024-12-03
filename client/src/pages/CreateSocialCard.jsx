@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../utils/axiosInstance';  // Import the axios instance for API calls
+import axiosInstance from '../utils/axiosInstance'; // Import the axios instance for API calls
 import SocialCardForm from '../components/Forms/SocialCardForm';
 import SocialCard from '../components/SocialCard';
 import axios from 'axios';
 import { validateForm } from '../utils/formValidation';
+import { useToast } from '../hooks/useToast'; // Import useToast hook
+import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
 
 function CreateSocialCard() {
   const [formData, setFormData] = useState({
@@ -23,12 +25,13 @@ function CreateSocialCard() {
   const [authToken, setAuthToken] = useState(''); // State for auth token
   const [isNewCard, setIsNewCard] = useState(true);  // Track if the card is new or editing an existing one
   const [isValid, setIsValid] = useState(false);
+  const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
 
   // Fetch the user's social card data on component mount
   useEffect(() => {
     const token = localStorage.getItem('auth-token');
     if (!token) {
-      alert('You need to log in to access the dashboard.');
+      addToast('You need to log in to access the dashboard.', 'error');
       window.location = '/'; // Redirect to login
     }
     setAuthToken(token);
@@ -47,7 +50,7 @@ function CreateSocialCard() {
         } else {
           setError('Error fetching social card');
           console.error('Error fetching social card:', error.message);
-          alert('An error occurred while fetching your social card.');
+          addToast('An error occurred while fetching your social card.', 'error');
         }
       } finally {
         setLoading(false);
@@ -69,39 +72,31 @@ function CreateSocialCard() {
 
   // Save the social card (either create or update)
   const saveCard = () => {
-    // if (!userId) {
-    //   console.error('User ID is null or undefined');
-    //   alert('User ID is missing. Please log in again.');
-    //   return;  // Exit if userId is missing
-    // }
     const { isValid, errors } = validateForm(formData);
     if (isValid) {
-      // Here you would typically send the data to your backend
-      // Check if it's a new card or an existing one
       setLoading(true);  // Start loading while saving
       const apiCall = isNewCard
         ? axios.post('http://localhost:5000/api/social-cards', formData, {
-          headers: { 'auth-token': authToken },
-        })
+            headers: { 'auth-token': authToken },
+          })
         : axios.put('http://localhost:5000/api/social-cards/me', formData, {
-          headers: { 'auth-token': authToken },
-        });  // Use dynamic userId for update
+            headers: { 'auth-token': authToken },
+          });  // Use dynamic userId for update
       apiCall
         .then((response) => {
           console.log('Card saved:', response.data);
-          alert('Social Card Saved Successfully!');
+          addToast('Social Card Saved Successfully!', 'success');
           setIsNewCard(false);  // Set to false as the card now exists
           setFormData(response.data);  // Update form data with saved data
         })
         .catch((error) => {
-          // Log formData and error for debugging
           console.log(formData);
           console.error('Error saving card:', error.response?.data || error.message);
 
           if (error.response?.status === 400 && error.response?.data?.error === 'Invalid card ID') {
-            alert('Invalid card ID. Please check the existing card ID if updating.');
+            addToast('Invalid card ID. Please check the existing card ID if updating.', 'error');
           } else {
-            alert('Failed to save the card. Please check the required fields.');
+            addToast('Failed to save the card. Please check the required fields.', 'error');
           }
         })
         .finally(() => {
@@ -110,10 +105,8 @@ function CreateSocialCard() {
       console.log('Form submitted:', formData);
     } else {
       console.log('Form validation errors:', errors);
+      addToast('Please fill out all required fields correctly.', 'error');
     }
-
-
-
   };
 
   return (
@@ -154,6 +147,9 @@ function CreateSocialCard() {
           </div>
         </div>
       </div>
+
+      {/* Add Toast Container to render toasts */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 }
