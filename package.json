@@ -7,7 +7,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "concurrently \"cd server && nodemon --env-file .\\.env .\\server.mjs\" \"cd client && npm run dev\"",
-    "dev-client": "concurrently \"cd client && npm run dev\" \"cd client && npm run sass\""
+    "dev-client": "concurrently \"cd client && npm run dev\" \"cd client && npm run sass\"",
+    "dev-server": "cd server && npm run dev"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.14.0",
