@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGO_URI)
 // Middleware
 // Enable CORS for requests coming from frontend
 app.use(cors({
-  origin: 'http://localhost:3000', // Allow requests from frontend
+  origin: ['http://localhost:3000', 'https://socialnak-a.netlify.app'], // Include both local dev and production URLs
   credentials: true, // Allow cookies and session credentials
 }));
 

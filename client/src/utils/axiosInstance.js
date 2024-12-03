@@ -38,7 +38,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         console.log('[Axios Interceptor] Sending refresh token request...');
-        const res = await axios.post('http://localhost:5000/api/users/refresh-token', null, {
+        const res = await axios.post(`${apiUrl}/users/refresh-token`, null, {
           withCredentials: true, // Ensure cookies are sent with the request
         });
 

@@ -134,7 +134,7 @@ router.post('/request-reset', async (req, res) => {
     await user.save();
 
     // Send email with reset link
-    const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
+    const resetUrl = `https://socialnak-a.netlify.app/reset-password?token=${resetToken}`;
 
     const transporter = nodemailer.createTransport({
       service: 'Gmail', // Use Gmail or your preferred SMTP service

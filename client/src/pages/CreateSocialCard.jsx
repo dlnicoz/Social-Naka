@@ -19,7 +19,7 @@ function CreateSocialCard() {
     category: "",
     isPublic: true,
   });
-
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [authToken, setAuthToken] = useState(''); // State for auth token
@@ -76,10 +76,10 @@ function CreateSocialCard() {
     if (isValid) {
       setLoading(true);  // Start loading while saving
       const apiCall = isNewCard
-        ? axios.post('http://localhost:5000/api/social-cards', formData, {
+        ? axios.post(`${apiUrl}/social-cards`, formData, {
             headers: { 'auth-token': authToken },
           })
-        : axios.put('http://localhost:5000/api/social-cards/me', formData, {
+        : axios.put(`${apiUrl}/social-cards/me`, formData, {
             headers: { 'auth-token': authToken },
           });  // Use dynamic userId for update
       apiCall
