@@ -9,9 +9,9 @@
     "dev": "concurrently \"cd server && nodemon --env-file .\\.env .\\server.mjs\" \"cd client && npm run dev\"",
     "dev-client": "concurrently \"cd client && npm run dev\" \"cd client && npm run sass\"",
     "dev-server": "cd server && npm run dev",
-    "start": "node server/server.mjs", 
+    "start": "cd server && npm run dev", 
     "build": "cd client && vite build", 
-    "preview": "vite preview" 
+    "preview": "vite preview"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.14.0",
