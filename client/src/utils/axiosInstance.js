@@ -1,11 +1,11 @@
 import axios from 'axios';
-import dotenv from 'dotenv';
 
-dotenv.config(); // Load environment variables
+const apiUrl = import.meta.env.VITE_API_URL;
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: apiUrl || 'http://localhost:5000/api',
   withCredentials: true, // Ensure cookies are sent with requests
 });
+console.log(apiUrl)
 
 // Attach access token to every request
 axiosInstance.interceptors.request.use(
