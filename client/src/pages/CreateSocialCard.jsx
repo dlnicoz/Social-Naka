@@ -26,6 +26,9 @@ function CreateSocialCard() {
   const [isNewCard, setIsNewCard] = useState(true);  // Track if the card is new or editing an existing one
   const [isValid, setIsValid] = useState(false);
   const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
+   // Generate the shareable link
+   const userName = localStorage.getItem('username') || 'User';
+   const shareableLink = `${window.location.origin}/user/${userName}`;
 
   // Fetch the user's social card data on component mount
   useEffect(() => {
@@ -88,6 +91,8 @@ function CreateSocialCard() {
           addToast('Social Card Saved Successfully!', 'success');
           setIsNewCard(false);  // Set to false as the card now exists
           setFormData(response.data);  // Update form data with saved data
+          // Redirect to shareable link after saving
+          window.location.href = shareableLink;
         })
         .catch((error) => {
           console.log(formData);
