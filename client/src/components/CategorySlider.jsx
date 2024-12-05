@@ -30,7 +30,9 @@ export default function CategorySlider() {
     setLoading(true);
     try {
       const response = await axiosInstance.get(`/social-cards?category=${category}`);
-      setSocialCards(response.data);
+      // Frontend filtering as a safeguard
+      const publicCards = response.data.filter((card) => card.isPublic);
+      setSocialCards(publicCards);
     } catch (error) {
       console.error('Error fetching social cards:', error.message);
       setSocialCards([]);
@@ -38,6 +40,7 @@ export default function CategorySlider() {
       setLoading(false);
     }
   };
+  
 
   // Handle navigation between categories
   const handleNavigation = (index) => {

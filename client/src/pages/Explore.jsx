@@ -18,7 +18,9 @@ const Explore = () => {
       const response = await axios.get(
         `http://localhost:5000/api/social-cards?search=${searchQuery}&category=${category}&limit=10`
       );
-      setUsers(response.data);
+      // Filter out private cards
+      const publicCards = response.data.filter((card) => card.isPublic);
+      setUsers(publicCards);
     } catch (error) {
       console.error('Error fetching social cards:', error);
       setUsers([]);
@@ -27,22 +29,18 @@ const Explore = () => {
     }
   };
 
-  // Effect to fetch social cards when search params or category changes
+  // Effect to handle search query or category changes
   useEffect(() => {
     const searchQuery = searchParams.get('search') || ''; // Get search query from URL params
     if (searchQuery) {
-      // If there's a search query, fetch based on the query
-      fetchSocialCards(searchQuery, '');
+      // Reset the category selection if there's a search query
+      setSelectedCategory('');
+      fetchSocialCards(searchQuery, ''); // Fetch based on search query only
     } else {
-      // If no search query, fetch based on category selection
+      // Fetch based on the currently selected category
       fetchSocialCards('', selectedCategory);
     }
   }, [searchParams, selectedCategory]);
-
-  // Fetch users on initial load
-  useEffect(() => {
-    fetchSocialCards('', selectedCategory); // Default load without search
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -50,16 +48,17 @@ const Explore = () => {
         {/* Category Filters */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex gap-3 overflow-x-auto pb-6 pt-2">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <motion.button
                 key={category.category}
                 onClick={() => setSelectedCategory(category.category)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${selectedCategory === category.category
-                  ? 'bg-black text-white'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                  }`}
+                className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+                  selectedCategory === category.category
+                    ? 'bg-black text-white'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                }`}
               >
                 {category.category}
               </motion.button>

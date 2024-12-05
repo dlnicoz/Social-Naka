@@ -40,34 +40,33 @@ router.post('/', verify, async (req, res) => {
   }
 });
 
-// Filter by category explore page
+// Fetch public social cards for explore/home page
 router.get('/', async (req, res) => {
   try {
-    const { category, search, limit = 10 } = req.query;  // Default limit to 10 if not provided
-    let filter = {};
+    const { search, category, limit = 10 } = req.query;
+    let filter = { isPublic: true }; // Ensure only public cards are fetched
 
-    // Filter by category if provided
     if (category) {
       filter.category = category;
     }
 
-    // Search across multiple fields if search query exists
     if (search) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } }, // Match name
-        { profession: { $regex: search, $options: 'i' } }, // Match profession
-        { description: { $regex: search, $options: 'i' } }, // Match description
+        { name: { $regex: search, $options: 'i' } },
+        { profession: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
       ];
     }
 
-    // Fetch matching social cards with limit
-    const cards = await SocialCard.find(filter).limit(parseInt(limit));  // Apply limit here
-
+    const cards = await SocialCard.find(filter).limit(parseInt(limit));
     res.status(200).json(cards);
   } catch (err) {
-    res.status(500).json({ error: 'Error fetching cards', details: err.message });
+    res.status(500).json({ error: 'Error fetching social cards', details: err.message });
   }
 });
+
+
+
 
 
 /**
