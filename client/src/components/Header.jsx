@@ -114,7 +114,7 @@ export default function Header() {
         <nav className="relative px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Left Section with Logo and Mobile Menu Button */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6 pl-4">
               <Link to="/" className="flex items-center">
                 <img src={SocialIcon} alt="Social Icon" className="h-8 w-8 sm:h-11 sm:w-11" />
               </Link>
