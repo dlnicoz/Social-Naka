@@ -2,7 +2,6 @@ import React, { useState , useEffect } from 'react';
 import SocialCard from '../components/SocialCard';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { themes } from '../components/themes';
 import PageBackground from '../components/Layout/PageBackground';
 
 function SocialCardFullPage() {
@@ -10,11 +9,12 @@ function SocialCardFullPage() {
   const { username } = useParams(); // Get username from URL
   const [socialCard, setSocialCard] = useState(null); // Social card state
   const [error, setError] = useState(null); // Error state
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     // Fetch the social card by username
     axios
-      .get(`http://localhost:5000/api/social-cards/user/${username}`)
+      .get(`${apiUrl}/social-cards/user/${username}`)
       .then((response) => {
         const fetchedData = response.data;
         setSocialCard(fetchedData);

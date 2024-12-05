@@ -10,13 +10,13 @@ const Explore = () => {
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?.category || '');
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-
+  const apiUrl = import.meta.env.VITE_API_URL;
   // Function to fetch social cards based on search query and category
   const fetchSocialCards = async (searchQuery = '', category = '') => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/social-cards?search=${searchQuery}&category=${category}&limit=10`
+        `${apiUrl}/social-cards?search=${searchQuery}&category=${category}&limit=10`
       );
       // Filter out private cards
       const publicCards = response.data.filter((card) => card.isPublic);

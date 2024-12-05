@@ -11,6 +11,7 @@ import axiosInstance from '../utils/axiosInstance';
 function Home() {
   const [users, setUsers] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const nextTestimonial = () => {
@@ -44,7 +45,7 @@ function Home() {
 
   // Fetch users on component mount
   useEffect(() => {
-    axios.get('http://localhost:5000/api/social-cards')
+    axios.get(`${apiUrl}/social-cards`)
       .then(response => setUsers(response.data))
       .catch(error => console.error('Error fetching social cards:', error));
   }, []);
