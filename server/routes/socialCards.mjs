@@ -3,20 +3,28 @@ import mongoose from 'mongoose';
 import SocialCard from '../models/SocialCards.mjs';
 import User from '../models/Users.mjs';
 import verify from '../middleware/verifyToken.mjs'; // Middleware to verify JWT
+import multer from 'multer'; // For file uploads
 
 const router = express.Router();
+
+// Configure Multer for in-memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 /**
  * Create a new social card
  */
-router.post('/', verify, async (req, res) => {
+router.post('/', verify, upload.single('profileImage'), async (req, res) => {
   try {
     const existingCard = await SocialCard.findOne({ userId: req.user._id });
     if (existingCard) {
       return res.status(400).json({ message: 'User already has a social card' });
     }
 
-    const { name, category, profession, location, profileUrl, phone,isPublic, description, theme, socialLinks } = req.body;
+    const { name, category, profession, location, phone, isPublic, description, theme, socialLinks } = req.body;
+
+    // Convert uploaded file to Base64 if present
+    const profileImage = req.file ? req.file.buffer.toString('base64') : null;
 
     const newCard = new SocialCard({
       userId: req.user._id,
@@ -25,7 +33,7 @@ router.post('/', verify, async (req, res) => {
       category,
       profession,
       location,
-      profileUrl,
+      profileImage, // Save Base64 image
       phone,
       isPublic,
       description,
@@ -64,10 +72,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Error fetching social cards', details: err.message });
   }
 });
-
-
-
-
 
 /**
  * Fetch the user's social card
@@ -110,18 +114,24 @@ router.get('/user/:username', async (req, res) => {
 /**
  * Update or create a social card for the logged-in user
  */
-router.put('/me', verify, async (req, res) => {
+router.put('/me', verify, upload.single('profileImage'), async (req, res) => {
   try {
     const userId = req.user._id;
+
+    // Convert uploaded file to Base64 if present
+    const profileImage = req.file ? req.file.buffer.toString('base64') : undefined;
 
     // Check if the user already has a social card
     let socialCard = await SocialCard.findOne({ userId });
 
     if (socialCard) {
       // Update the existing card
+      const updateData = { ...req.body };
+      if (profileImage) updateData.profileImage = profileImage; // Update profileUrl if a new image is uploaded
+
       socialCard = await SocialCard.findOneAndUpdate(
         { userId },
-        req.body,  // Fields to update
+        updateData, // Fields to update
         { new: true } // Return updated document
       );
       return res.status(200).json(socialCard);
@@ -130,6 +140,7 @@ router.put('/me', verify, async (req, res) => {
       const newSocialCard = new SocialCard({
         userId,
         ...req.body, // Spread the body to use in the new card
+        profileImage, // Add profileUrl for new card
       });
       await newSocialCard.save();
       return res.status(201).json(newSocialCard);
@@ -185,5 +196,7 @@ router.delete('/:id', verify, async (req, res) => {
     res.status(500).json({ error: 'Error deleting card', details: err.message });
   }
 });
+
+
 
 export default router;

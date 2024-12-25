@@ -14,7 +14,7 @@ function SocialCard({ profile }) {
         <div className="flex flex-col items-center text-center space-y-6">
           <div className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-white shadow-lg">
             <img
-              src={profile.profileUrl}
+              src={profile.profileImage}
               alt={profile.name}
               className="w-full h-full object-cover"
             />

@@ -38,7 +38,7 @@ function SocialCardFullPage() {
     name: "hello 11",
     profession: "Football Coach",
     location: "San Francisco, CA",
-    profileUrl: "https://images.unsplash.com/photo-1633332755192-727a05c4013d",
+    profileImage: "https://images.unsplash.com/photo-1633332755192-727a05c4013d",
     description: "Passionate about creating beautiful web experiences",
     theme: currentTheme,
     socialLinks: [
