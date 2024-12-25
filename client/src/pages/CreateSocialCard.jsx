@@ -19,7 +19,7 @@ function CreateSocialCard() {
     category: '',
     isPublic: true,
   });
-  
+
   const [profileImage, setProfileImage] = useState(null); // State for profile image
   const apiUrl = import.meta.env.VITE_API_URL; // API base URL
   const [loading, setLoading] = useState(false); // State for loading indicator
@@ -36,7 +36,7 @@ function CreateSocialCard() {
   // Define handleFileChange to handle file input
   const handleFileChange = (event) => {
     console.log(event);  // Log the event to check if it has the expected properties
-    const fileInput = event.target; 
+    const fileInput = event.target;
     const file = fileInput ? fileInput.files[0] : null;
     if (file) {
       setFormData({
@@ -81,28 +81,28 @@ function CreateSocialCard() {
   }, []); // Empty dependency array means this effect runs once when the component mounts
 
   // Revalidate the form whenever formData changes
-  // useEffect(() => {
-  //   const { isValid } = validateForm({ ...formData, profileImage });
-  //   setIsValid(isValid); // Update the validity state
-  // }, [formData, profileImage]);
+  useEffect(() => {
+    const { isValid } = validateForm({ ...formData, profileImage });
+    setIsValid(isValid); // Update the validity state
+  }, [formData, profileImage]);
 
-  useEffect(()=>{setIsValid(true)})
+  useEffect(() => { setIsValid(true) })
 
   // Handle form data change
   const handleFormChange = (updatedData) => {
     setFormData(updatedData); // Update form data
   };
-  
+
   // Save the social card (either create or update)
   const saveCard = async () => {
     const { isValid, errors } = validateForm(formData); // Validate form data
-  
+
     if (isValid) {
       setLoading(true); // Start loading while saving
       try {
         // Form data to send to the backend
         const formDataToSend = new FormData();
-        
+
         // Add form fields to FormData (not just plain object, since we need to upload files)
         formDataToSend.append('name', formData.name); // Name field
         formDataToSend.append('category', formData.category); // Category field
@@ -111,28 +111,30 @@ function CreateSocialCard() {
         formDataToSend.append('description', formData.description); // Description field
         formDataToSend.append('theme', formData.theme); // Theme field
         formDataToSend.append('isPublic', formData.isPublic); // Public setting
-        formDataToSend.append('socialLinks', JSON.stringify(formData.socialLinks)); // Social Links as JSON
-  
+        // Append socialLinks correctly
+        formData.socialLinks.forEach(link => {
+          formDataToSend.append('socialLinks[]', JSON.stringify(link)); // Append each link as a JSON string
+        });
         // Handle file upload (Profile image)
         if (profileImage) {
           formDataToSend.append('profileImage', profileImage); // Add the image file
         }
-        
+
         // Choose the right API call based on whether it's a new or existing card
         const apiCall = isNewCard
           ? axios.post(`${apiUrl}/social-cards`, formDataToSend, {
-              headers: {
-                'auth-token': authToken,
-                'Content-Type': 'multipart/form-data', // Set multipart form data for file upload
-              },
-            })
+            headers: {
+              'auth-token': authToken,
+              'Content-Type': 'multipart/form-data', // Set multipart form data for file upload
+            },
+          })
           : axios.put(`${apiUrl}/social-cards/me`, formDataToSend, {
-              headers: {
-                'auth-token': authToken,
-                'Content-Type': 'multipart/form-data', // Set multipart form data for file upload
-              },
-            });
-  
+            headers: {
+              'auth-token': authToken,
+              'Content-Type': 'multipart/form-data', // Set multipart form data for file upload
+            },
+          });
+
         // Make the API request
         const response = await apiCall;
         console.log('Card saved:', response.data);
@@ -140,11 +142,11 @@ function CreateSocialCard() {
         setIsNewCard(false); // Set to false as the card now exists
         setFormData(response.data); // Update form data with the saved data
         window.location.href = shareableLink; // Redirect to the shareable link after saving
-  
+
       } catch (error) {
         console.log(formData);
         console.error('Error saving card:', error.response?.data || error.message);
-        
+
         if (error.response?.status === 400 && error.response?.data?.error === 'Invalid card ID') {
           addToast('Invalid card ID. Please check the existing card ID if updating.', 'error');
         } else {
@@ -153,15 +155,15 @@ function CreateSocialCard() {
       } finally {
         setLoading(false); // Stop loading once the operation is done
       }
-  
+
       console.log('Form submitted:', formData);
     } else {
       console.log('Form validation errors:', errors);
       addToast('Please fill out all required fields correctly.', 'error');
     }
   };
-  
-  
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
@@ -177,12 +179,12 @@ function CreateSocialCard() {
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Form Section */}
           <div className="bg-white rounded-2xl p-6 shadow-xl">
-          <SocialCardForm
-            data={formData}
-            onChange={handleFormChange}
-            onFileChange={handleFileChange}  // Pass handleFileChange as a prop
-            loading={false}
-          />
+            <SocialCardForm
+              data={formData}
+              onChange={handleFormChange}
+              onFileChange={handleFileChange}  // Pass handleFileChange as a prop
+              loading={false}
+            />
 
             {isValid && (
               <div className="text-center mt-8">
