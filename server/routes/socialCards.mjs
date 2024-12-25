@@ -14,7 +14,7 @@ const upload = multer({ storage: storage });
 /**
  * Create a new social card
  */
-router.post('/', verify, upload.single('profileImage'), async (req, res) => {
+router.post('/', verify, upload.any(), async (req, res) => {
   try {
     const existingCard = await SocialCard.findOne({ userId: req.user._id });
     if (existingCard) {
@@ -24,7 +24,7 @@ router.post('/', verify, upload.single('profileImage'), async (req, res) => {
     const { name, category, profession, location, phone, isPublic, description, theme, socialLinks } = req.body;
 
     // Convert uploaded file to Base64 if present
-    const profileImage = req.file ? req.file.buffer.toString('base64') : null;
+    const photobase64 = req.file ? req.file.buffer.toString('base64') : null;
 
     const newCard = new SocialCard({
       userId: req.user._id,
@@ -33,7 +33,7 @@ router.post('/', verify, upload.single('profileImage'), async (req, res) => {
       category,
       profession,
       location,
-      profileImage, // Save Base64 image
+      profileImage : photobase64, // Save Base64 image
       phone,
       isPublic,
       description,
