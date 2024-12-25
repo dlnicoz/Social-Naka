@@ -113,7 +113,7 @@ function CreateSocialCard() {
         formDataToSend.append('isPublic', formData.isPublic); // Public setting
         // Append socialLinks correctly
         formData.socialLinks.forEach(link => {
-          formDataToSend.append('socialLinks[]', JSON.stringify(link)); // Append each link as a JSON string
+          formDataToSend.append('socialLinks[]', new Blob([JSON.stringify(link)], { type: 'application/json' }));
         });
         // Handle file upload (Profile image)
         if (profileImage) {

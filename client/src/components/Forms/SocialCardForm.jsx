@@ -64,14 +64,22 @@ function SocialCardForm({ data, onChange, onFileChange, errors, loading }) {
       />
 
       {/* Use FormField for Profile Image Upload */}
-      <FormField
-        label="Upload Profile Image"
-        value={data.profileImage}
-        onChange={onFileChange} // The function that will handle the file change
-        type="file"  // This indicates it's a file input
-        error={errors?.profileImage}
-        disabled={loading}
-      />
+      <div className="flex flex-col">
+
+        <label className="block text-gray-700 text-sm font-medium">Upload Profile Image</label>
+
+        <input
+          type="file"
+          name="profileImage"
+          accept="image/*"
+          onChange={onFileChange}
+          disabled={loading}
+          className="mt-1 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-green-400"
+        />
+
+        {errors?.profileImage && <p className="text-red-500 text-sm">{errors.profileImage}</p>}
+
+      </div>
 
       <FormField
         label="Description"
