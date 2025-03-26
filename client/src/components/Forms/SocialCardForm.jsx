@@ -1,9 +1,11 @@
 import React from 'react';
+import { useState } from 'react';
 import { themes } from '../themes';
 import FormField from './FormField';
 import SocialLinksField from './SocialLinksField';
 import CategoryField from './CategoryField';
 import PrivacySettings from './PrivacySettings';
+import { supabase } from '../../utils/supabase';
 
 function SocialCardForm({ data, onChange }) {
   const userName = localStorage.getItem('username') || 'User'; // Retrieve username
@@ -29,6 +31,36 @@ function SocialCardForm({ data, onChange }) {
 
   // Generate a shareable link based on the user's ID or unique identifier
   const shareableLink = `${window.location.origin}/user/${userName}`;
+
+
+  const [uploading, setUploading] = useState(false);
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+  
+    setUploading(true);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `profile-images/${fileName}`;
+  
+    const { data, error } = await supabase.storage
+      .from("profile-image") // Bucket name
+      .upload(filePath, file);
+  
+    if (error) {
+      console.error("Upload failed:", error);
+      setUploading(false);
+      return;
+    }
+  
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from("profile-image")
+      .getPublicUrl(filePath);
+  
+    handleInputChange('profileUrl', urlData.publicUrl); // Update formData with image URL
+    setUploading(false);
+  };
 
   return (
     <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
@@ -63,8 +95,10 @@ function SocialCardForm({ data, onChange }) {
         label="Profile Image URL"
         value={data.profileUrl}
         onChange={(value) => handleInputChange('profileUrl', value)}
-        placeholder="https://example.com/image.jpg"
+        placeholder="Images will be update"
       />
+      <input type="file" onChange={handleImageUpload} accept="image/*" />
+      {uploading && <p>Uploading...</p>}
       
       <FormField
         label="Description"
