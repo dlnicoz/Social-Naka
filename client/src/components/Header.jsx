@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef , useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BadgePlus, Home, LogOut, Pencil, Share2, Search, Menu, X } from 'lucide-react'; // Added Search icon
@@ -7,67 +7,76 @@ import Avvvatars from 'avvvatars-react'; // Avatar generation
 import { cn } from '../lib/utils';
 import axios from 'axios'; // For fetching social card info
 import { useScrollDirection } from './useScrollDirection';
-import { AuthContext } from '../context/AuthContext'; // 🔹 Import AuthContext
-import axiosInstance from '../utils/axiosInstance'; // 🔹 Use Axios instance
+import { AuthContext } from '../context/AuthContext'; // Import AuthContext
+import axiosInstance from '../utils/axiosInstance'; // Import axios instance
+
 
 export default function Header() {
-  const { user, logout } = useContext(AuthContext); // 🔹 Get auth state and logout function
-  const location = useLocation(); // Current path
-  const navigate = useNavigate(); // Add this to handle navigation
-  const isDashboard = location.pathname === '/dashboard'; 
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('auth-token')); // Directly initialize from localStorage
+  const { user, logout } = useContext(AuthContext); // Get auth state from context
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown visibility
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu visibility
   const [hasSocialCard, setHasSocialCard] = useState(false); // Social card existence
-  const [isSearchOpen, setIsSearchOpen] = useState(location.pathname === '/explore'); // Set initially based on location
+  const [isSearchVisible, setIsSearchVisible] = useState(false); // Toggle search visibility
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // Track search bar visibility state
+  const location = useLocation(); // Current path
+  const isExplore = location.pathname === '/explore'; // Check if on explore page
   const dropdownRef = useRef(null); // Reference for dropdown menu
   const profileButtonRef = useRef(null); // Reference for profile button
   const dropdownTimerRef = useRef(null); // Timer for auto-hide dropdown
   const userName = localStorage.getItem('username') || 'User'; // Retrieve username
+  const navigate = useNavigate(); // Add this to handle navigation
   const [searchValue, setSearchValue] = useState(''); // Track search input
   const isVisible = useScrollDirection();
-  const isExplore = location.pathname === '/explore'; // Check if on explore page
-  const fetchedOnce = useRef(false); // Prevent duplicate fetches
 
   const handleSearch = (event) => {
     const value = event.target.value;
     setSearchValue(value);
-
-    const params = new URLSearchParams(location.search);
-    params.set('search', value);
-
-    if (!value) params.delete('search'); // Clear search if empty
-
-    navigate(`/explore?${params.toString()}`);
+    navigate(`/explore?search=${value}`); // Update the Explore page URL with the search query
   };
 
-  // 🔹 Fetch Social Card (Only if logged in & not already fetched)
+  // Fetch user info and check for social card
   useEffect(() => {
-    if (!user || fetchedOnce.current) return;
-    fetchedOnce.current = true;
-
     const fetchSocialCard = async () => {
-      try {
-        const response = await axiosInstance.get('/social-cards/me');
-        if (response.status === 200) setHasSocialCard(true);
-      } catch {
-        setHasSocialCard(false);
+      const token = localStorage.getItem('auth-token');
+      setIsLoggedIn(!!token);
+      console.log('[Header] Checking for Social Card. Token Present:', !!token);
+
+      if (token) {
+        try {
+          const response = await axiosInstance.get('/social-cards/me');
+          if (response.status === 200) {
+            setHasSocialCard(true);
+            console.log('[Header] Social Card Found:', response.data);
+          }
+        } catch (error) {
+          console.warn('[Header] Error Fetching Social Card:', error);
+          if (error.response?.status === 401) {
+            console.log('[Header] Unauthorized. Social Card Not Found.');
+            setHasSocialCard(false);
+          }
+        }
       }
     };
 
     fetchSocialCard();
-  }, [user]);
+  }, [location.pathname]);
+
 
   // Handle logout
   const handleLogout = () => {
-    logout(); // 🔹 Use AuthContext logout function
-    navigate('/login');
+    localStorage.removeItem('auth-token'); // Remove access token
+    localStorage.removeItem('refresh-token'); // Remove refresh token
+    setIsLoggedIn(false);
+    window.location = '/login'; // Redirect to login page
   };
 
   // Reset the dropdown auto-hide timer
   const resetDropdownTimer = () => {
-    if (!showDropdown) return; // Only reset timer when dropdown is open
-    clearTimeout(dropdownTimerRef.current); // Clear existing timer
+    if (dropdownTimerRef.current) {
+      clearTimeout(dropdownTimerRef.current); // Clear existing timer
+    }
+    // Set a new timer to close the dropdown after 3 seconds
     dropdownTimerRef.current = setTimeout(() => {
       setShowDropdown(false); // Hide dropdown
     }, 3000);
@@ -77,11 +86,20 @@ export default function Header() {
   const handleProfileClick = () => {
     setShowDropdown((prev) => {
       const newState = !prev;
-      if (newState) resetDropdownTimer(); // Reset the timer only when dropdown opens
+      if (newState) resetDropdownTimer(); // Reset the timer when dropdown opens
       return newState;
     });
   };
-  
+
+  // Reset timer if user interacts with dropdown
+  useEffect(() => {
+    if (showDropdown) resetDropdownTimer();
+    if (isExplore) setIsSearchOpen(true)
+    else setIsSearchOpen(false)
+  }, [showDropdown]);
+
+  // Check if the current route is the Dashboard
+  const isDashboard = location.pathname === '/dashboard';
 
   return (
     <motion.div
@@ -91,9 +109,10 @@ export default function Header() {
       className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 pt-6"
     >
       <header
-        className={`max-w-7xl mx-auto bg-white border border-gray-200 shadow-lg transition-all duration-50 ease-in-out ${isMobileMenuOpen ? 'rounded-lg' : 'rounded-full'
+        className={`max-w-7xl mx-auto bg-white border border-gray-200 shadow-lg transition-all duration-50 ease-in-out ${isMobileMenuOpen ? "rounded-lg" : "rounded-full"
           }`}
       >
+
         <nav className="relative px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Left Section with Logo and Mobile Menu Button */}
@@ -113,10 +132,23 @@ export default function Header() {
                         'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       )}
                     >
-                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-                        {isDashboard ? <Home size={20} /> : hasSocialCard ? <Pencil size={20} /> : <BadgePlus size={20} />}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {isDashboard ? (
+                          <Home size={20} />
+                        ) : hasSocialCard ? (
+                          <Pencil size={20} />
+                        ) : (
+                          <BadgePlus size={20} />
+                        )}
                       </motion.div>
-                      <span className="font-medium">{isDashboard ? 'Home' : hasSocialCard ? 'Edit' : 'Create'}</span>
+                      <span className="font-medium">
+                        {isDashboard ? 'Home' : hasSocialCard ? 'Edit' : 'Create'}
+                      </span>
                     </Link>
 
                     {hasSocialCard && (
@@ -124,9 +156,17 @@ export default function Header() {
                         target="_blank"
                         rel="noopener noreferrer"
                         to={`/user/${userName}`}
-                        className="flex items-center gap-2 px-5 py-2.5 text-sm rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300"
+                        className={cn(
+                          'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-300',
+                          'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        )}
                       >
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
                           <Share2 size={20} />
                         </motion.div>
                         <span className="font-medium">Share</span>
@@ -146,12 +186,11 @@ export default function Header() {
                   <span className="font-medium">Explore</span>
                 </Link>
 
-                {/* Optimized Search Bar Animation */}
                 {isExplore && (
                   <AnimatePresence>
                     <motion.div
                       initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }} // Removed unnecessary width="100%"
+                      animate={{ opacity: 1, width: '100%' }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.5 }}
                       className="relative flex-1 ml-2"
@@ -173,7 +212,6 @@ export default function Header() {
               </div>
             </div>
 
-
             {/* Right Section */}
             <div className="flex items-center gap-4">
               {/* Desktop User Menu */}
@@ -184,21 +222,19 @@ export default function Header() {
                       Hey, {userName}!
                     </span>
                     <div className="relative">
-                      {/* Profile Avatar Button */}
                       <motion.button
                         ref={profileButtonRef}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowDropdown((prev) => !prev)} // Optimized state update
+                        onClick={handleProfileClick}
                         className="flex items-center rounded-full bg-gray-100 p-2 hover:bg-gray-200"
                       >
                         <Avvvatars value={userName} size={36} className="rounded-full" />
                       </motion.button>
-
-                      {/* Optimized Dropdown */}
                       <AnimatePresence>
                         {showDropdown && (
                           <motion.div
+                            ref={dropdownRef}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
@@ -234,7 +270,9 @@ export default function Header() {
                     </Link>
                     <Link
                       to="/signup"
-                      className="px-5 py-2.5 text-sm rounded-full font-medium bg-gray-900 text-white hover:bg-gray-800"
+                      className={cn(
+                        'px-5 py-2.5 text-sm rounded-full font-medium bg-gray-900 text-white hover:bg-gray-800'
+                      )}
                     >
                       Sign up free
                     </Link>
@@ -244,19 +282,21 @@ export default function Header() {
 
               {/* Mobile Menu Button */}
               <button
-                onClick={() => setIsMobileMenuOpen((prev) => !prev)} // Functional state update
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
               >
-                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isMobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
               </button>
             </div>
-
           </div>
 
           {/* Mobile Menu */}
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <AnimatePresence>
+          <AnimatePresence>
+            {isMobileMenuOpen && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -264,109 +304,99 @@ export default function Header() {
                 transition={{ duration: 0.3 }}
                 className="md:hidden py-4 space-y-4 border-t border-gray-200"
               >
-                {/* Function to close mobile menu */}
-                {(() => {
-                  const handleCloseMobileMenu = () => setIsMobileMenuOpen(false);
-
-                  return (
-                    <>
-                      {!isExplore && (
-                        <>
-                          <Link
-                            to={isDashboard ? '/' : '/dashboard'}
-                            onClick={handleCloseMobileMenu}
-                            className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                          >
-                            {isDashboard ? (
-                              <Home size={20} />
-                            ) : hasSocialCard ? (
-                              <Pencil size={20} />
-                            ) : (
-                              <BadgePlus size={20} />
-                            )}
-                            <span>{isDashboard ? 'Home' : hasSocialCard ? 'Edit' : 'Create'}</span>
-                          </Link>
-
-                          {hasSocialCard && (
-                            <Link
-                              to={`/user/${userName}`}
-                              onClick={handleCloseMobileMenu}
-                              className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                            >
-                              <Share2 size={20} />
-                              <span>Share</span>
-                            </Link>
-                          )}
-                        </>
+                {!isExplore && (
+                  <>
+                    <Link
+                      to={isDashboard ? '/' : '/dashboard'}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                    >
+                      {isDashboard ? (
+                        <Home size={20} />
+                      ) : hasSocialCard ? (
+                        <Pencil size={20} />
+                      ) : (
+                        <BadgePlus size={20} />
                       )}
+                      <span>{isDashboard ? 'Home' : hasSocialCard ? 'Edit' : 'Create'}</span>
+                    </Link>
 
+                    {hasSocialCard && (
                       <Link
-                        to="/explore"
-                        onClick={handleCloseMobileMenu}
+                        to={`/user/${userName}`}
+                        onClick={() => setIsMobileMenuOpen(false)}
                         className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                       >
-                        <Search size={20} />
-                        <span>Explore</span>
+                        <Share2 size={20} />
+                        <span>Share</span>
                       </Link>
+                    )}
+                  </>
+                )}
 
-                      {isExplore && (
-                        <div className="px-4">
-                          <div className="relative">
-                            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                              <Search className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                              type="text"
-                              value={searchValue}
-                              onChange={handleSearch}
-                              placeholder="Search profession..."
-                              className="w-full pl-11 pr-4 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
-                            />
-                          </div>
-                        </div>
-                      )}
+                <Link
+                  to="/explore"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                >
+                  <Search size={20} />
+                  <span>Explore</span>
+                </Link>
 
-                      {isLoggedIn ? (
-                        <>
-                          <div className="px-4 py-2 text-sm font-medium text-gray-700">
-                            Hey, {userName}!
-                          </div>
-                          <button
-                            onClick={() => {
-                              handleLogout();
-                              handleCloseMobileMenu();
-                            }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                          >
-                            <LogOut className="w-4 h-4 mr-2" />
-                            <span>Sign Out</span>
-                          </button>
-                        </>
-                      ) : (
-                        <div className="px-4 space-y-2">
-                          <Link
-                            to="/login"
-                            onClick={handleCloseMobileMenu}
-                            className="block w-full px-4 py-2 text-sm text-center font-medium text-gray-700 bg-cyan-300 hover:bg-cyan-200 rounded-lg"
-                          >
-                            Log in
-                          </Link>
-                          <Link
-                            to="/signup"
-                            onClick={handleCloseMobileMenu}
-                            className="block w-full px-4 py-2 text-sm text-center font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800"
-                          >
-                            Sign up free
-                          </Link>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+                {isExplore && (
+                  <div className="px-4">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        value={searchValue}
+                        onChange={handleSearch}
+                        placeholder="Search profession..."
+                        className="w-full pl-11 pr-4 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {isLoggedIn ? (
+                  <>
+                    <div className="px-4 py-2 text-sm font-medium text-gray-700">
+                      Hey, {userName}!
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleLogout?.();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      <span>Sign Out</span>
+                    </button>
+                  </>
+                ) : (
+                  <div className="px-4 space-y-2">
+                    <Link
+                      to="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full px-4 py-2 text-sm text-center font-medium text-gray-700 bg-cyan-300 hover:bg-cyan-200 rounded-lg"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full px-4 py-2 text-sm text-center font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800"
+                    >
+                      Sign up free
+                    </Link>
+                  </div>
+                )}
               </motion.div>
-            </AnimatePresence>
-          )}
-
+            )}
+          </AnimatePresence>
         </nav>
       </header>
     </motion.div>
