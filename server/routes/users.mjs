@@ -36,7 +36,7 @@ router.post('/register', async (req, res) => {
     const accessToken = jwt.sign({ _id: savedUser._id }, jwtSecret, { expiresIn: '15m' });
     const refreshToken = jwt.sign({ _id: savedUser._id }, refreshTokenSecret, { expiresIn: '7d' });
 
-    savedUser.refreshToken = hash(refreshToken); // Hash and store the refresh token
+    savedUser.refreshToken = refreshToken; // Hash and store the refresh token
     await savedUser.save();
 
     res.cookie('refreshToken', refreshToken, {
@@ -71,10 +71,10 @@ router.post('/login', async (req, res) => {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) return res.status(400).send('Invalid password');
 
-    const accessToken = jwt.sign({ _id: user._id }, jwtSecret, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ _id: user._id }, refreshTokenSecret, { expiresIn: '7d' });
+    const accessToken = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ _id: user._id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
 
-    user.refreshToken = hash(refreshToken); // Store securely
+    user.refreshToken = refreshToken; // Store securely
     await user.save();
 
     res.cookie('refreshToken', refreshToken, {
@@ -102,9 +102,6 @@ router.post('/refresh-token', async (req, res) => {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     const user = await User.findById(decoded._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-
-    const isValid = bcrypt.compareSync(refreshToken, user.refreshToken);
-    if (!isValid) return res.status(403).json({ message: 'Invalid refresh token' });
 
     const newAccessToken = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
     res.status(200).json({ token: newAccessToken });

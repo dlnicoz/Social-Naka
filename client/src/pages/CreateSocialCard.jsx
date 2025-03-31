@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../utils/axiosInstance'; // Import the axios instance for API calls
 import SocialCardForm from '../components/Forms/SocialCardForm';
 import SocialCard from '../components/SocialCard';
-import axios from 'axios';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { validateForm } from '../utils/formValidation';
 import { useToast } from '../hooks/useToast'; // Import useToast hook
 import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
@@ -20,24 +21,33 @@ function CreateSocialCard() {
     isPublic: true,
   });
   const apiUrl = import.meta.env.VITE_API_URL;
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [authToken, setAuthToken] = useState(''); // State for auth token
   const [isNewCard, setIsNewCard] = useState(true);  // Track if the card is new or editing an existing one
   const [isValid, setIsValid] = useState(false);
   const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
-   // Generate the shareable link
-   const userName = localStorage.getItem('username') || 'User';
-   const shareableLink = `${window.location.origin}/user/${userName}`;
+  useEffect(() => {
+    axiosInstance.get('/social-cards/me')
+      .then(res => setUsername(res.data.username))
+      .catch(() => setUsername('User'));
+  }, []);
+  const userName = localStorage.getItem('username') || 'User';
+  const shareableLink = `${window.location.origin}/user/${userName}`;
 
   // Fetch the user's social card data on component mount
   useEffect(() => {
     const token = localStorage.getItem('auth-token');
     if (!token) {
       addToast('You need to log in to access the dashboard.', 'error');
-      window.location = '/'; // Redirect to login
+      navigate('/');
     }
-    setAuthToken(token);
+    const authToken = localStorage.getItem('auth-token');
+    if (authToken) {
+      axiosInstance.defaults.headers.common['auth-token'] = authToken;
+    }
 
     const fetchSocialCard = async () => {
       try {
@@ -60,13 +70,17 @@ function CreateSocialCard() {
       }
     };
 
-    fetchSocialCard(); // Fetch social card data when component mounts
-  }, []);  // Empty dependency array means this effect runs once when the component mounts
+    if (authToken) fetchSocialCard();
+  }, [authToken]);  // Empty dependency array means this effect runs once when the component mounts
 
-  useEffect(() => {
+  const validateInput = useCallback(() => {
     const { isValid } = validateForm(formData);
     setIsValid(isValid);
   }, [formData]);
+
+  useEffect(() => {
+    validateInput();
+  }, [validateInput]);
 
   // Handle form data change
   const handleFormChange = (updatedData) => {
@@ -79,12 +93,9 @@ function CreateSocialCard() {
     if (isValid) {
       setLoading(true);  // Start loading while saving
       const apiCall = isNewCard
-        ? axios.post(`${apiUrl}/social-cards`, formData, {
-            headers: { 'auth-token': authToken },
-          })
-        : axios.put(`${apiUrl}/social-cards/me`, formData, {
-            headers: { 'auth-token': authToken },
-          });  // Use dynamic userId for update
+        ? axiosInstance.post('/social-cards', formData)
+        : axiosInstance.put('/social-cards/me', formData);
+      // Use dynamic userId for update
       apiCall
         .then((response) => {
           console.log('Card saved:', response.data);

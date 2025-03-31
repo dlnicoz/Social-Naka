@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState ,useContext } from 'react';
+import { Link , useNavigate } from 'react-router-dom';
 import { Eye, Atom } from 'lucide-react';
-import axiosInstance from '../utils/axiosInstance';
+import { AuthContext } from '../context/AuthContext';
 import AuthSideImage from '../components/AuthSideImage';
 import { useToast } from '../hooks/useToast'; // Import useToast hook
 import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
@@ -13,7 +13,8 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
-
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
@@ -25,17 +26,9 @@ const Login = () => {
     setWrongPassword(false);
 
     try {
-      const res = await axiosInstance.post('/users/login', values);
-
-      // Save tokens in storage/cookie
-      localStorage.setItem('auth-token', res.data.accessToken);
-      document.cookie = `refreshToken=${res.data.refreshToken}; path=/; HttpOnly`;
-
-      localStorage.setItem('username', res.data.username);
-
-      // Use toast instead of alert
+      await login(values); // ✅ Use login function from AuthContext
       addToast('Login successful!', 'success');
-      window.location = '/dashboard';
+      setTimeout(() => navigate('/dashboard'), 1000);
     } catch (err) {
       const error = err.response?.data || 'Unknown error';
       if (error === 'Username/Email not found') {

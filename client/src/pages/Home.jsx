@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , useContext } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -8,10 +8,11 @@ import { Filter, ArrowLeft, ArrowRight } from 'lucide-react';
 import Footer from '../components/Footer'
 import { cn } from '../lib/utils';
 import axiosInstance from '../utils/axiosInstance';
+import { AuthContext } from '../context/AuthContext'; 
 
 function Home() {
+  const { user } = useContext(AuthContext); // Get authentication state
   const [users, setUsers] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -46,7 +47,7 @@ function Home() {
 
   // Fetch users on component mount
   useEffect(() => {
-    axios.get(`${apiUrl}/social-cards`)
+    axiosInstance.get('/social-cards') // Use axiosInstance instead of axios
       .then(response => setUsers(response.data))
       .catch(error => console.error('Error fetching social cards:', error));
   }, []);

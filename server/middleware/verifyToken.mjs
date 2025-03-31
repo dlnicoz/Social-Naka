@@ -1,13 +1,13 @@
 import jwt from 'jsonwebtoken';
 
 export default (req, res, next) => {
-  // Extract the token from the Authorization header (bearer token)
-  const token = req.header('auth-token') || req.header('Authorization')?.split(' ')[1];
-
-  // If there's no token, return "Access Denied"
+  const authHeader = req.header('Authorization');
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  
   if (!token) {
     return res.status(401).json({ message: 'Access Denied: No token provided' });
   }
+  
 
   try {
     // Verify the token using JWT secret

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -11,6 +11,8 @@ const Explore = () => {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
+  const firstRender = useRef(true); // Prevents useEffect from running on initial render
+
   // Function to fetch social cards based on search query and category
   const fetchSocialCards = async (searchQuery = '', category = '') => {
     setLoading(true);
@@ -31,14 +33,23 @@ const Explore = () => {
 
   // Effect to handle search query or category changes
   useEffect(() => {
-    const searchQuery = searchParams.get('search') || ''; // Get search query from URL params
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
+    const searchQuery = searchParams.get('search') || '';
+
     if (searchQuery) {
-      // Reset the category selection if there's a search query
-      setSelectedCategory('');
+      if (selectedCategory !== '') {
+        setSelectedCategory(''); // Reset category when search query exists
+      }
       fetchSocialCards(searchQuery, ''); // Fetch based on search query only
     } else {
-      // Fetch based on the currently selected category
-      fetchSocialCards('', selectedCategory);
+      if (selectedCategory === '') {
+        setSelectedCategory(categories[0]?.category || ''); // Reset to first category when search is cleared
+      }
+      fetchSocialCards('', selectedCategory); // Fetch based on the selected category
     }
   }, [searchParams, selectedCategory]);
 

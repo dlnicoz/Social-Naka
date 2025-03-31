@@ -22,6 +22,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.use(cors({
   origin: ['http://localhost:3000', 'https://socialnak-a.netlify.app'], // Include both local dev and production URLs
   credentials: true, // Allow cookies and session credentials
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific methods
+  allowedHeaders: ['Content-Type', 'Authorization' , 'auth-token'], // Allow specific headers
 }));
 
 app.use(express.json());

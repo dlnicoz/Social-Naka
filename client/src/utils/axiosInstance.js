@@ -3,7 +3,7 @@ import axios from 'axios';
 const apiUrl = import.meta.env.VITE_API_URL;
 const axiosInstance = axios.create({
   baseURL: apiUrl || 'http://localhost:5000/api',
-  withCredentials: true, // Ensure cookies are sent with requests
+  withCredentials: true,
 });
 console.log(apiUrl)
 
@@ -13,7 +13,9 @@ axiosInstance.interceptors.request.use(
     const token = localStorage.getItem('auth-token');
     console.log('[Axios Request] Access Token:', token); // Log the current access token
     if (token) {
-      config.headers['auth-token'] = token;
+      config.headers['auth-token'] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log("[Axios access token]" , token)
     }
     return config;
   },
@@ -25,44 +27,34 @@ axiosInstance.interceptors.request.use(
 
 // Handle token expiration and refresh token flow
 axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log('[Axios Response]', response); // Log successful responses
-    return response;
-  },
+  (response) => response, // Return successful responses as-is
   async (error) => {
     const originalRequest = error.config;
 
+    // If the access token is expired and it's not already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.warn('[Axios Interceptor] 401 Unauthorized. Attempting token refresh.'); // Log the 401 error
       originalRequest._retry = true;
 
       try {
-        console.log('[Axios Interceptor] Sending refresh token request...');
-        const res = await axios.post(`${apiUrl}/users/refresh-token`, null, {
-          withCredentials: true, // Ensure cookies are sent with the request
-        });
-
+        const res = await axiosInstance.post('/users/refresh-token');
         const { token } = res.data;
-        console.log('[Axios Interceptor] New Access Token Received:', token); // Log the new access token
 
         localStorage.setItem('auth-token', token);
-        originalRequest.headers['auth-token'] = token;
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        originalRequest.headers['Authorization'] = `Bearer ${token}`;
 
-        console.log('[Axios Interceptor] Retrying original request...');
         return axiosInstance(originalRequest); // Retry the original request
       } catch (refreshError) {
-        console.error('[Axios Interceptor] Error refreshing token:', refreshError);
-        console.warn('[Axios Interceptor] Redirecting to login page...');
+        console.error("Refresh token failed, logging out.");
         localStorage.removeItem('auth-token');
-        localStorage.removeItem('refresh-token');
         window.location = '/login';
         return Promise.reject(refreshError);
       }
     }
 
-    console.error('[Axios Interceptor] Request Error:', error); // Log other errors
     return Promise.reject(error);
   }
 );
+
 
 export default axiosInstance;

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState , useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Atom } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 import axiosInstance from '../utils/axiosInstance';
 import AuthSideImage from '../components/AuthSideImage';
 import { useToast } from '../hooks/useToast'; // Import useToast hook
@@ -15,6 +16,8 @@ const Signup = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
+
+  const { register } = useContext(AuthContext);
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
@@ -39,13 +42,8 @@ const Signup = () => {
     }
 
     try {
-      const res = await axiosInstance.post('/users/register', values);
-
-      // Save tokens in storage/cookie
-      localStorage.setItem('auth-token', res.data.accessToken);
-      document.cookie = `refreshToken=${res.data.refreshToken}; path=/; HttpOnly`;
-
-      localStorage.setItem('username', res.data.username);
+      // Use register function from AuthContext instead of direct axios call
+      await register(values);
 
       addToast('Registration successful!', 'success'); // Show success toast
       window.location = '/dashboard';
