@@ -60,30 +60,51 @@ export const AuthProvider = ({ children }) => {
   const login = async (values) => {
     try {
       const res = await axiosInstance.post('/users/login', values);
-      const { accessToken } = res.data;
+      const { accessToken, refreshToken, username, email, profilePic } = res.data;
+  
       localStorage.setItem('auth-token', accessToken);
+      localStorage.setItem('username' , username)
       axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-      setUser({ username: res.data.username }); // Update context state
+      // Update the user state with all required fields
+      setUser({ username, email, profilePic });
       return res.data;
     } catch (error) {
       console.error('Login error:', error);
       throw error;  
     }
   };
+  
 
   const register = async (values) => {
     try {
       const res = await axiosInstance.post('/users/register', values);
-      const { accessToken } = res.data;
-
+      const { accessToken, refreshToken, username, profilePic } = res.data;
+  
+      // Store token in localStorage
       localStorage.setItem('auth-token', accessToken);
-      setUser({ username: res.data.username }); // Update context state
+      localStorage.setItem('username', username);
+
+  
+      // Update axios instance with new token
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+  
+      // Update user state with relevant info
+      setUser({
+        isLogin: true,
+        token: accessToken,
+        refreshToken,
+        username,
+        email,
+        profilePic: profilePic || null, // Handle optional profile pic
+      });
+  
       return res.data;
     } catch (error) {
       console.error('Register error:', error);
       throw error;
     }
   };
+  
 
   const logout = () => {
     localStorage.removeItem('auth-token');

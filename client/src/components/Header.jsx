@@ -26,6 +26,7 @@ export default function Header() {
   const dropdownTimerRef = useRef(null); // Timer for auto-hide dropdown
   const userName = localStorage.getItem('username') || 'User'; // Retrieve username
   const navigate = useNavigate(); // Add this to handle navigation
+  // const userName = user?.userName || 'user';
   const [searchValue, setSearchValue] = useState(''); // Track search input
   const isVisible = useScrollDirection();
 
