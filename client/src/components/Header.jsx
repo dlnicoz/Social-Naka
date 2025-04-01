@@ -67,7 +67,6 @@ export default function Header() {
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem('auth-token'); // Remove access token
-    localStorage.removeItem('refresh-token'); // Remove refresh token
     setIsLoggedIn(false);
     window.location = '/login'; // Redirect to login page
   };

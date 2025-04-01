@@ -13,9 +13,7 @@ axiosInstance.interceptors.request.use(
     const token = localStorage.getItem('auth-token');
     console.log('[Axios Request] Access Token:', token); // Log the current access token
     if (token) {
-      config.headers['auth-token'] = `Bearer ${token}`;
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log("[Axios access token]" , token)
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },
@@ -36,7 +34,13 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const res = await axiosInstance.post('/users/refresh-token');
+        // Use a separate Axios instance to prevent sending the expired token
+        const refreshInstance = axios.create({
+          baseURL: apiUrl || 'http://localhost:5000/api',
+          withCredentials: true,
+        });
+
+        const res = await refreshInstance.post('/users/refresh-token'); // No old token sent
         const { token } = res.data;
 
         localStorage.setItem('auth-token', token);
