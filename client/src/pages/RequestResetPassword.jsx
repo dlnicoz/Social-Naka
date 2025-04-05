@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axiosInstance from '../utils/axiosInstance';
 import { useToast } from '../hooks/useToast'; // Import useToast hook
 import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
 
@@ -11,15 +10,6 @@ const RequestResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    try {
-      await axiosInstance.post('/users/request-reset', { email });
-      addToast('Reset link sent to your email!', 'success');
-    } catch (err) {
-      addToast(err.response?.data?.message || 'Something went wrong.', 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   return (

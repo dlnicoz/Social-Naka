@@ -1,23 +1,22 @@
-import React, { useState , useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { Eye, Atom } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
-import axiosInstance from '../utils/axiosInstance';
-import AuthSideImage from '../components/AuthSideImage';
-import { useToast } from '../hooks/useToast'; // Import useToast hook
-import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, Atom } from "lucide-react";
+import AuthSideImage from "../components/AuthSideImage";
+import { useToast } from "../hooks/useToast";
+import ToastContainer from "../components/Toast/ToastContainer";
+import GoogleButton from "../components/GoogleButton";
+import supabase from '../utils/supabase'; // ✅ Named + Default Import
+
+
 
 const Signup = () => {
-  const [values, setValues] = useState({ username: '', email: '', password: '', confirmPassword: '' });
-  const [userExists, setUserExists] = useState(false);
-  const [emailExists, setEmailExists] = useState(false);
+  const [values, setValues] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
-
-  const { register } = useContext(AuthContext);
+  const { toasts, addToast, removeToast } = useToast();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
@@ -30,35 +29,32 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setUserExists(false);
-    setEmailExists(false);
     setPasswordsMatch(true);
 
     if (values.password !== values.confirmPassword) {
       setPasswordsMatch(false);
       setIsSubmitting(false);
-      addToast('Passwords do not match', 'error'); // Show error toast
+      addToast("Passwords do not match", "error");
       return;
     }
 
     try {
-      // Use register function from AuthContext instead of direct axios call
-      await register(values);
+      // 🛠 Supabase Sign-Up
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: { name: values.name }, // Store additional user info
+          email_confirm: process.env.NODE_ENV === "development", // Auto-confirm in dev
+        },
+      });
 
-      addToast('Registration successful!', 'success'); // Show success toast
-      window.location = '/dashboard';
+      if (error) throw error;
+
+      addToast("Registration successful! Check your email for verification.", "success");
+      navigate("/login"); // Redirect to login
     } catch (err) {
-      const error = err.response?.data || 'Unknown error';
-      if (error === 'Email already exists') {
-        setEmailExists(true);
-        addToast('Email already exists', 'error'); // Show error toast
-      } else if (error === 'Username already exists') {
-        setUserExists(true);
-        addToast('Username already exists', 'error'); // Show error toast
-      } else {
-        console.error(error);
-        addToast('An unexpected error occurred', 'error'); // Show error toast
-      }
+      addToast(err.message || "An unexpected error occurred", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -78,22 +74,30 @@ const Signup = () => {
               <h1 className="text-5xl font-black">Create your account</h1>
             </div>
 
-            {/* Error Message Display */}
+            {/* Error Messages */}
             <div className="custom-error-msg">
-              {userExists && <p className="text-red-500">Username already exists</p>}
-              {emailExists && <p className="text-red-500">Email already exists</p>}
               {!passwordsMatch && <p className="text-red-500">Passwords do not match</p>}
             </div>
 
             <form className="space-y-4" onSubmit={handleSubmit}>
-              {/* Username Input */}
+              {/* Name Input */}
+              <GoogleButton text="Sign up with Google" ClickFun={signInWithGoogle} />
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
               <div>
                 <input
                   type="text"
-                  name="username"
-                  value={values.username}
+                  name="name"
+                  value={values.name}
                   onChange={handleChange}
-                  placeholder="Username"
+                  placeholder="Full Name"
                   className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
                   required
                 />
@@ -106,7 +110,7 @@ const Signup = () => {
                   name="email"
                   value={values.email}
                   onChange={handleChange}
-                  placeholder="Email: link@gmail.com"
+                  placeholder="Email: example@gmail.com"
                   className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
                   required
                 />
@@ -139,7 +143,7 @@ const Signup = () => {
                   name="confirmPassword"
                   value={values.confirmPassword}
                   onChange={handleChange}
-                  onBlur={handlePasswordValidation} // Validate on blur
+                  onBlur={handlePasswordValidation}
                   placeholder="Confirm Password"
                   className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 pr-12"
                   required
@@ -159,13 +163,13 @@ const Signup = () => {
                 disabled={isSubmitting}
                 className="w-full py-3 px-4 bg-gray-100 rounded-lg font-medium hover:bg-gray-200 transition-colors"
               >
-                {isSubmitting ? 'Signing up...' : 'Create account'}
+                {isSubmitting ? "Signing up..." : "Create account"}
               </button>
             </form>
 
             {/* Link to Log In Page */}
             <p className="text-center text-gray-600">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link to="/login" className="text-purple-600 hover:underline">
                 Log in
               </Link>
@@ -180,7 +184,7 @@ const Signup = () => {
         />
       </div>
 
-      {/* Add Toast Container to render toasts */}
+      {/* Toast Messages */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </>
   );

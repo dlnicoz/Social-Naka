@@ -5,7 +5,7 @@ import FormField from './FormField';
 import SocialLinksField from './SocialLinksField';
 import CategoryField from './CategoryField';
 import PrivacySettings from './PrivacySettings';
-import { supabase } from '../../utils/supabase';
+import supabase from '../../utils/supabase';
 
 function SocialCardForm({ data, onChange }) {
   const userName = localStorage.getItem('username') || 'User'; // Retrieve username
@@ -65,10 +65,11 @@ function SocialCardForm({ data, onChange }) {
   return (
     <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
       <PrivacySettings 
-        isPublic={data.isPublic}
-        shareableLink={shareableLink}
-        onToggle={handlePrivacyToggle}
-      />
+  shareableLink={`${window.location.origin}/user/${data.slug}`}
+  slug={data.slug}
+  onSlugChange={(value) => handleInputChange('slug', value)}
+/>
+
 
       <FormField
         label="Name"

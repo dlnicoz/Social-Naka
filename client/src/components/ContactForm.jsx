@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'; // Importing useEffect to handle side effects
 import { motion } from 'framer-motion';
-import axiosInstance from '../utils/axiosInstance'; // Assuming axiosInstance is set up correctly for your API
 
 export default function ContactForm() {
   const [email, setEmail] = useState('');
@@ -15,14 +14,6 @@ export default function ContactForm() {
   }, []);
 
   // Fetch user details when the component loads
-  useEffect(() => {
-    if (isLoggedIn) {
-      // Simulate fetching user data from local storage or an API
-      const name = localStorage.getItem('username') || 'Guest';
-      const phone = localStorage.getItem('phone') || ''; // Assume `phone` is stored in localStorage
-      setUserDetails({ name, phone });
-    }
-  }, [isLoggedIn]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

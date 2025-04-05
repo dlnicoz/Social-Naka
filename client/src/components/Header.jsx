@@ -1,19 +1,23 @@
-import React, { useState, useEffect, useRef , useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BadgePlus, Home, LogOut, Pencil, Share2, Search, Menu, X } from 'lucide-react'; // Added Search icon
 import SocialIcon from '../assets/socialnakaicon.png';
-import Avvvatars from 'avvvatars-react'; // Avatar generation
+import Avvvatars from 'avvvatars-react';
 import { cn } from '../lib/utils';
-import axios from 'axios'; // For fetching social card info
 import { useScrollDirection } from './useScrollDirection';
-import { AuthContext } from '../context/AuthContext'; // Import AuthContext
-import axiosInstance from '../utils/axiosInstance'; // Import axios instance
+import { useAuth } from "../context/AuthContext";
+
 
 
 export default function Header() {
-  const { user, logout } = useContext(AuthContext); // Get auth state from context
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+  const { user , setUser ,logout , authLoading } = useAuth();
+  const userUrl = user?.user_metadata?.userUrl || user?.user_metadata?.avatar_url;
+  const userName = user?.user_metadata?.full_name || user?.email
+  const isLoggedIn = !!user;
+  const profileUrlName = user?.profileUrlName;
+
+
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown visibility
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu visibility
   const [hasSocialCard, setHasSocialCard] = useState(false); // Social card existence
@@ -24,9 +28,7 @@ export default function Header() {
   const dropdownRef = useRef(null); // Reference for dropdown menu
   const profileButtonRef = useRef(null); // Reference for profile button
   const dropdownTimerRef = useRef(null); // Timer for auto-hide dropdown
-  const userName = localStorage.getItem('username') || 'User'; // Retrieve username
   const navigate = useNavigate(); // Add this to handle navigation
-  // const userName = user?.userName || 'user';
   const [searchValue, setSearchValue] = useState(''); // Track search input
   const isVisible = useScrollDirection();
 
@@ -37,38 +39,12 @@ export default function Header() {
   };
 
   // Fetch user info and check for social card
-  useEffect(() => {
-    const fetchSocialCard = async () => {
-      const token = localStorage.getItem('auth-token');
-      setIsLoggedIn(!!token);
-      console.log('[Header] Checking for Social Card. Token Present:', !!token);
-
-      if (token) {
-        try {
-          const response = await axiosInstance.get('/social-cards/me');
-          if (response.status === 200) {
-            setHasSocialCard(true);
-            console.log('[Header] Social Card Found:', response.data);
-          }
-        } catch (error) {
-          console.warn('[Header] Error Fetching Social Card:', error);
-          if (error.response?.status === 401) {
-            console.log('[Header] Unauthorized. Social Card Not Found.');
-            setHasSocialCard(false);
-          }
-        }
-      }
-    };
-
-    fetchSocialCard();
-  }, [location.pathname]);
 
 
   // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('auth-token'); // Remove access token
-    setIsLoggedIn(false);
-    window.location = '/login'; // Redirect to login page
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   // Reset the dropdown auto-hide timer
@@ -155,7 +131,7 @@ export default function Header() {
                       <Link
                         target="_blank"
                         rel="noopener noreferrer"
-                        to={`/user/${userName}`}
+                        to={`/user/${profileUrlName}`}
                         className={cn(
                           'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-300',
                           'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -216,7 +192,7 @@ export default function Header() {
             <div className="flex items-center gap-4">
               {/* Desktop User Menu */}
               <div className="hidden md:flex items-center gap-6">
-                {isLoggedIn ? (
+                { isLoggedIn ? (
                   <div className="flex items-center gap-4">
                     <span className="text-xl font-semibold text-gray-800 font-poppins">
                       Hey, {userName}!
@@ -229,8 +205,12 @@ export default function Header() {
                         onClick={handleProfileClick}
                         className="flex items-center rounded-full bg-gray-100 p-2 hover:bg-gray-200"
                       >
-                        <Avvvatars value={userName} size={36} className="rounded-full" />
-                      </motion.button>
+                        {userUrl ? (
+                          <img src={userUrl} alt="User Avatar" className="rounded-full w-9 h-9" />
+                        ) : (
+                          <Avvvatars value={user?.user_metadata?.full_name || user?.email} size={36} className="rounded-full" />
+                        )}
+                        </motion.button>
                       <AnimatePresence>
                         {showDropdown && (
                           <motion.div
@@ -323,7 +303,7 @@ export default function Header() {
 
                     {hasSocialCard && (
                       <Link
-                        to={`/user/${userName}`}
+                        to={`/user/${profileUrlName}`}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
                       >

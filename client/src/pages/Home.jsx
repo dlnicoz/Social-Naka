@@ -3,16 +3,15 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Instagram, Youtube, Twitter, BarChart, Smartphone, Palette, Link as LinkIcon } from 'lucide-react';
-import CategorySlider from '../components/CategorySlider';
+// import CategorySlider from '../components/CategorySlider';
 import { Filter, ArrowLeft, ArrowRight } from 'lucide-react';
 import Footer from '../components/Footer'
 import { cn } from '../lib/utils';
-import axiosInstance from '../utils/axiosInstance';
-import { AuthContext } from '../context/AuthContext'; 
+// import AuthContext  from '../context/AuthContext'; 
 
 function Home() {
-  const { user } = useContext(AuthContext); // Get authentication state
-  const [users, setUsers] = useState([]);
+  // const { user } = useContext(AuthContext); // Get authentication state
+  // const [users, setUsers] = useState([]);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -44,13 +43,6 @@ function Home() {
       image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80"
     }
   ];
-
-  // Fetch users on component mount
-  useEffect(() => {
-    axiosInstance.get('/social-cards') // Use axiosInstance instead of axios
-      .then(response => setUsers(response.data))
-      .catch(error => console.error('Error fetching social cards:', error));
-  }, []);
 
   return (
     <>
@@ -223,7 +215,7 @@ function Home() {
           </div>
         </div>
 
-        <CategorySlider />
+        {/* <CategorySlider /> */}
         <Footer />
       </div>
     </>

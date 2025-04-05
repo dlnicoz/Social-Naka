@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import axiosInstance from '../utils/axiosInstance';
 import { useToast } from '../hooks/useToast'; // Import the useToast hook
 import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
 
@@ -15,17 +14,6 @@ const ResetPassword = () => {
 
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    // Validate token on page load
-    axiosInstance
-      .get(`/users/validate-reset-token?token=${token}`)
-      .then(() => setTokenValid(true))
-      .catch(() => {
-        setError('Invalid or expired reset link.');
-        addToast('Invalid or expired reset link.', 'error'); // Show toast on error
-      });
-  }, [token, addToast]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -36,17 +24,6 @@ const ResetPassword = () => {
 
     setIsSubmitting(true);
     setError('');
-
-    try {
-      await axiosInstance.post('/users/reset-password', { token, newPassword: password });
-      addToast('Password reset successful! You can now log in.', 'success'); // Success toast
-      window.location = '/login'; // Redirect to login
-    } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong.');
-      addToast(err.response?.data?.message || 'Something went wrong.', 'error'); // Error toast
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   if (!tokenValid && !error) {

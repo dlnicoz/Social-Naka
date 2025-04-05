@@ -1,77 +1,67 @@
-import React, { useState, useEffect } from 'react';
-import axiosInstance from '../utils/axiosInstance'; // Import the axios instance for API calls
+import React, { useState, useEffect, useCallback } from 'react';
 import SocialCardForm from '../components/Forms/SocialCardForm';
 import SocialCard from '../components/SocialCard';
-import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { validateForm } from '../utils/formValidation';
-import { useToast } from '../hooks/useToast'; // Import useToast hook
-import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
+import { useToast } from '../hooks/useToast';
+import ToastContainer from '../components/Toast/ToastContainer';
+import { useNavigate } from 'react-router-dom';
+import supabase from '../utils/supabase';
+import { useAuth } from '../context/AuthContext';
 
 function CreateSocialCard() {
   const [formData, setFormData] = useState({
-    name: "",
-    profession: "",
-    location: "",
-    profileUrl: "",
-    description: "",
-    theme: "gradient",
+    name: '',
+    profession: '',
+    location: '',
+    profileUrl: '',
+    description: '',
+    theme: 'gradient',
     socialLinks: [],
-    category: "",
-    isPublic: true,
+    category: '',
+    slug: '',
   });
-  const apiUrl = import.meta.env.VITE_API_URL;
-  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const [error, setError] = useState(null);
-  const [authToken, setAuthToken] = useState(''); // State for auth token
-  const [isNewCard, setIsNewCard] = useState(true);  // Track if the card is new or editing an existing one
+  const [isNewCard, setIsNewCard] = useState(true);
   const [isValid, setIsValid] = useState(false);
-  const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
-  useEffect(() => {
-    axiosInstance.get('/social-cards/me')
-      .then(res => setUsername(res.data.username))
-      .catch(() => setUsername('User'));
-  }, []);
-  const userName = localStorage.getItem('username') || 'User';
-  const shareableLink = `${window.location.origin}/user/${userName}`;
+  const { toasts, addToast, removeToast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Fetch the user's social card data on component mount
+  const shareableLink = formData.slug ? `${window.location.origin}/user/${formData.slug}` : '';
+
   useEffect(() => {
-    const token = localStorage.getItem('auth-token');
-    if (!token) {
+    if (!user) {
       addToast('You need to log in to access the dashboard.', 'error');
       navigate('/');
-    }
-    const authToken = localStorage.getItem('auth-token');
-    if (authToken) {
-      axiosInstance.defaults.headers.common['auth-token'] = authToken;
+      return;
     }
 
     const fetchSocialCard = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/social-cards/me');
-        console.log('Social card fetched successfully:', response.data);
-        setFormData(response.data);  // Populate the form with fetched data
-        setIsNewCard(false);  // Indicate that the card already exists
-      } catch (error) {
-        if (error.response?.status === 404) {
-          console.log('No social card found, creating a new one.');
-          setIsNewCard(true);  // Indicate that no social card was found
+        const { data, error } = await supabase
+          .from('social_cards')
+          .select('id, name, profession, location, profileUrl, description, theme, socialLinks, category, slug, user_id')          .eq('user_id', user.id)
+          .single();
+
+        if (error || !data) {
+          console.log('No social card found.');
+          setIsNewCard(true);
         } else {
-          setError('Error fetching social card');
-          console.error('Error fetching social card:', error.message);
-          addToast('An error occurred while fetching your social card.', 'error');
+          setFormData(data);
+          setIsNewCard(false);
         }
+      } catch (error) {
+        setError('Error fetching social card.');
+        addToast('An error occurred while fetching your social card.', 'error');
       } finally {
         setLoading(false);
       }
     };
 
-    if (authToken) fetchSocialCard();
-  }, [authToken]);  // Empty dependency array means this effect runs once when the component mounts
+    fetchSocialCard();
+  }, [user]);
 
   const validateInput = useCallback(() => {
     const { isValid } = validateForm(formData);
@@ -82,46 +72,62 @@ function CreateSocialCard() {
     validateInput();
   }, [validateInput]);
 
-  // Handle form data change
   const handleFormChange = (updatedData) => {
     setFormData(updatedData);
   };
 
-  // Save the social card (either create or update)
-  const saveCard = () => {
+  const saveCard = async () => {
     const { isValid, errors } = validateForm(formData);
-    if (isValid) {
-      setLoading(true);  // Start loading while saving
-      const apiCall = isNewCard
-        ? axiosInstance.post('/social-cards', formData)
-        : axiosInstance.put('/social-cards/me', formData);
-      // Use dynamic userId for update
-      apiCall
-        .then((response) => {
-          console.log('Card saved:', response.data);
-          addToast('Social Card Saved Successfully!', 'success');
-          setIsNewCard(false);  // Set to false as the card now exists
-          setFormData(response.data);  // Update form data with saved data
-          // Redirect to shareable link after saving
-          window.location.href = shareableLink;
-        })
-        .catch((error) => {
-          console.log(formData);
-          console.error('Error saving card:', error.response?.data || error.message);
-
-          if (error.response?.status === 400 && error.response?.data?.error === 'Invalid card ID') {
-            addToast('Invalid card ID. Please check the existing card ID if updating.', 'error');
-          } else {
-            addToast('Failed to save the card. Please check the required fields.', 'error');
-          }
-        })
-        .finally(() => {
-          setLoading(false);  // Stop loading once the operation is done
-        });
-      console.log('Form submitted:', formData);
-    } else {
-      console.log('Form validation errors:', errors);
+    if (!isValid) {
       addToast('Please fill out all required fields correctly.', 'error');
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      if (isNewCard || formData.slug !== prevSlug) {
+      const { data: existingSlug } = await supabase
+      .from('social_cards')
+      .select('id')
+      .eq('slug', formData.slug)
+      .neq('user_id', user.id)
+      .single();
+
+    if (existingSlug) {
+      addToast('This slug is already taken. Please choose another.', 'error');
+      setLoading(false);
+      return;
+    }
+  }
+
+      let response;
+      if (isNewCard) {
+        response = await supabase
+          .from('social_cards')
+          .insert([{ ...formData, user_id: user.id }])
+          .select()
+          .single();
+      } else {
+        response = await supabase
+          .from('social_cards')
+          .update({ ...formData })
+          .eq('user_id', user.id)
+          .select()
+          .single();
+      }
+
+      if (response.error) throw response.error;
+
+      addToast('Social Card Saved Successfully!', 'success');
+      setIsNewCard(false);
+      setFormData(response.data);
+      navigate(`/user/${response.data.slug}`);
+    } catch (error) {
+      console.error('Error saving card:', error.message);
+      addToast('Failed to save the card. Please try again.', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,17 +138,12 @@ function CreateSocialCard() {
           Create or Edit Your Social Card
         </h1>
 
-        {/* Loading and Error Messages */}
         {loading && <p>Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
 
         <div className="grid lg:grid-cols-2 gap-8 items-start">
-          {/* Form Section */}
           <div className="bg-white rounded-2xl p-6 shadow-xl">
-            <SocialCardForm
-              data={formData}
-              onChange={handleFormChange}
-            />
+            <SocialCardForm data={formData} onChange={handleFormChange} />
             {isValid && (
               <div className="text-center mt-8">
                 <button
@@ -156,15 +157,20 @@ function CreateSocialCard() {
             )}
           </div>
 
-          {/* Preview Section */}
           <div className="lg:sticky lg:top-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Live Preview</h2>
             <SocialCard profile={formData} />
           </div>
         </div>
+
+        {shareableLink && (
+          <div className="text-center mt-6">
+            <p className="text-green-600 font-semibold">Your Profile Link:</p>
+            <a href={shareableLink} className="text-blue-500">{shareableLink}</a>
+          </div>
+        )}
       </div>
 
-      {/* Add Toast Container to render toasts */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );

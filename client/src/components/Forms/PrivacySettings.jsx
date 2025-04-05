@@ -2,7 +2,7 @@ import React from 'react';
 import { Lock, Unlock, Share2, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 
-function PrivacySettings({ isPublic, shareableLink, onToggle }) {
+function PrivacySettings({  shareableLink, slug , onSlugChange }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = () => {
@@ -13,7 +13,7 @@ function PrivacySettings({ isPublic, shareableLink, onToggle }) {
 
   return (
     <div className="space-y-4">
-      {/* Privacy Toggle */}
+      {/* Privacy Toggle
       <div className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
         <div className="flex items-center gap-3">
           {isPublic ? (
@@ -43,6 +43,19 @@ function PrivacySettings({ isPublic, shareableLink, onToggle }) {
               ${isPublic ? 'translate-x-6' : 'translate-x-1'}`}
           />
         </button>
+      </div> */}
+
+      {/* Slug Input */}
+      <div className="bg-gray-100 rounded-lg p-4 space-y-2">
+        <label className="text-sm font-medium text-gray-700">Choose your profile slug</label>
+        <input
+          type="text"
+          value={slug}
+          onChange={(e) => onSlugChange(e.target.value.trim().toLowerCase())}
+          placeholder="your-unique-slug"
+          className="w-full px-3 py-2 rounded-md border text-sm"
+        />
+        <p className="text-xs text-red-500">Avoid changing your slug frequently. It affects your public profile link.</p>
       </div>
 
       {/* Shareable Link */}
@@ -52,7 +65,7 @@ function PrivacySettings({ isPublic, shareableLink, onToggle }) {
           <p className="font-medium text-gray-900">Shareable Link</p>
         </div>
         <p className="text-sm text-gray-600">
-          Anyone with this link can view your profile, regardless of privacy settings
+          Anyone with this link can view your profile.
         </p>
         <div className="flex gap-2">
           <input
@@ -82,5 +95,4 @@ function PrivacySettings({ isPublic, shareableLink, onToggle }) {
     </div>
   );
 }
-
 export default PrivacySettings;
