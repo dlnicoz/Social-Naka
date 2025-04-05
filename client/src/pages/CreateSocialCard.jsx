@@ -22,6 +22,7 @@ function CreateSocialCard() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [prevSlug, setPrevSlug] = useState('');
   const [isNewCard, setIsNewCard] = useState(true);
   const [isValid, setIsValid] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
@@ -50,6 +51,7 @@ function CreateSocialCard() {
           setIsNewCard(true);
         } else {
           setFormData(data);
+          setPrevSlug(data.slug); // <- Save original slug
           setIsNewCard(false);
         }
       } catch (error) {
