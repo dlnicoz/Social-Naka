@@ -1,24 +1,27 @@
-import React, { useState ,useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, Atom } from 'lucide-react';
-import  {useAuth}  from '../context/AuthContext';
+import SocialIcon from '../assets/socialnakaicon.png';
+import { useAuth } from '../context/AuthContext';
 import AuthSideImage from '../components/AuthSideImage';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/Toast/ToastContainer';
 import GoogleButton from '../components/GoogleButton';
-import supabase from '../utils/supabase'; 
+import supabase from '../utils/supabase';
 
 
 const Login = () => {
   const [values, setValues] = useState({ username: '', password: '' });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const navigate = useNavigate();
+
+
   const { addToast, toasts, removeToast } = useToast();
-  const { user , setUser ,login ,signInWithGoogle } = useAuth(); // ✅ Ensure useAuth() is inside AuthProvider
+  const { user, setUser, login, signInWithGoogle } = useAuth(); // ✅ Ensure useAuth() is inside AuthProvider
   console.log(user); // Debugging Purpose  
 
-  
+
   // Input Change Handler
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
@@ -48,7 +51,8 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      await login(values); // ✅ Context API ka login function use ho raha hai
+      await login(values);
+      setUser(user);
       addToast('Login Successful!', 'success');
       navigate('/dashboard');
     } catch (err) {
@@ -71,8 +75,13 @@ const Login = () => {
     <>
       <div className="flex xl:flex-row relative">
         <div className="absolute top-6 left-6 lg:top-12 lg:left-12 lg:h-6 z-50 flex items-center gap-1">
-          <Link to='/'> <span className="text-2xl font-bold">SocialNaka</span></Link>
-          <Atom className="text-blue-400" size={24} />
+          <Link to='/'>
+            <span className="flex items-center text-2xl font-bold">
+              SocialNaka
+              <img src={SocialIcon} alt="Social Icon" className="h-6 w-6 sm:h-8 sm:w-8 ml-2" />
+            </span>
+          </Link>
+
         </div>
         <div className="relative flex w-full lg:py-[var(--lg)] lg:px-4 xl:p-8 xl:pb-4 xl:w-[calc(100vw-52%)] min-h-screen justify-center">
           <div className="w-full max-w-md space-y-8 pt-32">
@@ -124,7 +133,7 @@ const Login = () => {
               <button
                 type="submit"
                 className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isSubmitting ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200'}`}
-                >
+              >
                 {isSubmitting ? 'Logging in...' : 'Log in'}
               </button>
             </form>

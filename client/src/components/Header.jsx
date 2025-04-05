@@ -7,11 +7,16 @@ import Avvvatars from 'avvvatars-react';
 import { cn } from '../lib/utils';
 import { useScrollDirection } from './useScrollDirection';
 import { useAuth } from "../context/AuthContext";
+import { useToast } from '../hooks/useToast';
+import ToastContainer from '../components/Toast/ToastContainer';
+
+
 
 
 
 export default function Header() {
-  const { user , setUser ,logout , authLoading } = useAuth();
+    const { addToast, toasts, removeToast } = useToast();
+  const { user, setUser, logout, authLoading } = useAuth();
   const userUrl = user?.user_metadata?.userUrl || user?.user_metadata?.avatar_url;
   const userName = user?.user_metadata?.full_name || user?.email
   const isLoggedIn = !!user;
@@ -43,6 +48,7 @@ export default function Header() {
 
   // Handle logout
   const handleLogout = async () => {
+    addToast('Sign-Out Successful!', 'success');
     await logout();
     navigate('/login');
   };
@@ -192,7 +198,7 @@ export default function Header() {
             <div className="flex items-center gap-4">
               {/* Desktop User Menu */}
               <div className="hidden md:flex items-center gap-6">
-                { isLoggedIn ? (
+                {isLoggedIn ? (
                   <div className="flex items-center gap-4">
                     <span className="text-xl font-semibold text-gray-800 font-poppins">
                       Hey, {userName}!
@@ -210,7 +216,7 @@ export default function Header() {
                         ) : (
                           <Avvvatars value={user?.user_metadata?.full_name || user?.email} size={36} className="rounded-full" />
                         )}
-                        </motion.button>
+                      </motion.button>
                       <AnimatePresence>
                         {showDropdown && (
                           <motion.div
@@ -228,13 +234,15 @@ export default function Header() {
                             >
                               Dashboard
                             </Link>
-                            <button
+                            <motion.button
+                              whileTap={{ scale: 0.95 }}
                               onClick={handleLogout}
-                              className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-gray-100"
+                              className="flex items-center space-x-2 w-full px-4 py-2 text-red-600 hover:bg-gray-100 rounded-md cursor-pointer"
                             >
                               <LogOut className="w-4 h-4" />
                               <span>Sign Out</span>
-                            </button>
+                            </motion.button>
+
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -377,6 +385,8 @@ export default function Header() {
               </motion.div>
             )}
           </AnimatePresence>
+          <ToastContainer toasts={toasts} removeToast={removeToast} />
+
         </nav>
       </header>
     </motion.div>

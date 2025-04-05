@@ -1,58 +1,84 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, Atom } from "lucide-react";
 import AuthSideImage from "../components/AuthSideImage";
 import { useToast } from "../hooks/useToast";
 import ToastContainer from "../components/Toast/ToastContainer";
 import GoogleButton from "../components/GoogleButton";
-import supabase from '../utils/supabase'; // ✅ Named + Default Import
-
+import { useAuth } from "../context/AuthContext";
+import supabase from "../utils/supabase";
+import SocialIcon from '../assets/socialnakaicon.png';
 
 
 const Signup = () => {
-  const [values, setValues] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [values, setValues] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
   const { toasts, addToast, removeToast } = useToast();
+  const { signInWithGoogle, setUser } = useAuth();
   const navigate = useNavigate();
+
+  // Passwords match live validation
+  useEffect(() => {
+    setPasswordsMatch(values.password === values.confirmPassword);
+  }, [values.password, values.confirmPassword]);
 
   const handleChange = (e) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
-  const handlePasswordValidation = () => {
-    setPasswordsMatch(values.password === values.confirmPassword);
+  const handleGoogleSignUp = async () => {
+    try {
+      const { data, error } = await signInWithGoogle();
+      if (error) throw error;
+
+      const user = data?.user;
+      if (user) {
+        setUser(user);
+        addToast("Google Sign-Up Successful!", "success");
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error("Google Sign-Up Error:", err);
+      addToast("Google Sign-Up Failed!", "error");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setPasswordsMatch(true);
 
-    if (values.password !== values.confirmPassword) {
-      setPasswordsMatch(false);
-      setIsSubmitting(false);
+    if (!passwordsMatch) {
       addToast("Passwords do not match", "error");
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      // 🛠 Supabase Sign-Up
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
-          data: { name: values.name }, // Store additional user info
-          email_confirm: process.env.NODE_ENV === "development", // Auto-confirm in dev
+          data: { name: values.name },
         },
       });
 
       if (error) throw error;
 
-      addToast("Registration successful! Check your email for verification.", "success");
-      navigate("/login"); // Redirect to login
+      addToast("Registration successful! Please verify your email.", "success");
+
+      // Slight delay before redirect
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (err) {
       addToast(err.message || "An unexpected error occurred", "error");
     } finally {
@@ -63,26 +89,26 @@ const Signup = () => {
   return (
     <>
       <div className="flex xl:flex-row relative">
+        {/* Logo */}
         <div className="absolute top-6 left-6 lg:top-12 lg:left-12 lg:h-6 z-50 flex items-center gap-1">
-          <span className="text-2xl font-bold">SocialNaka</span>
-          <Atom className="text-blue-400" size={24} />
+          <Link to='/'>
+            <span className="flex items-center text-2xl font-bold">
+              SocialNaka
+              <img src={SocialIcon} alt="Social Icon" className="h-6 w-6 sm:h-8 sm:w-8 ml-2" />
+            </span>
+          </Link>
+
         </div>
 
+        {/* Form Section */}
         <div className="relative flex w-full lg:py-[var(--lg)] lg:px-4 xl:p-8 xl:pb-4 xl:w-[calc(100vw-52%)] min-h-screen justify-center">
           <div className="w-full max-w-md space-y-8 pt-20">
-            <div>
-              <h1 className="text-5xl font-black">Create your account</h1>
-            </div>
+            <h1 className="text-5xl font-black">Create your account</h1>
 
-            {/* Error Messages */}
-            <div className="custom-error-msg">
-              {!passwordsMatch && <p className="text-red-500">Passwords do not match</p>}
-            </div>
+            {/* Google Sign Up */}
+            <GoogleButton text="Sign up with Google" ClickFun={handleGoogleSignUp} />
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              {/* Name Input */}
-              <GoogleButton text="Sign up with Google" ClickFun={signInWithGoogle} />
-
+            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -91,32 +117,35 @@ const Signup = () => {
                 <span className="px-2 bg-white text-gray-500">Or continue with</span>
               </div>
             </div>
-              <div>
-                <input
-                  type="text"
-                  name="name"
-                  value={values.name}
-                  onChange={handleChange}
-                  placeholder="Full Name"
-                  className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-                  required
-                />
-              </div>
 
-              {/* Email Input */}
-              <div>
-                <input
-                  type="email"
-                  name="email"
-                  value={values.email}
-                  onChange={handleChange}
-                  placeholder="Email: example@gmail.com"
-                  className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
-                  required
-                />
-              </div>
+            {/* Error */}
+            {!passwordsMatch && <p className="text-red-500">Passwords do not match</p>}
 
-              {/* Password Input */}
+            {/* Form */}
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              {/* Name */}
+              <input
+                type="text"
+                name="name"
+                value={values.name}
+                onChange={handleChange}
+                placeholder="Full Name"
+                className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                required
+              />
+
+              {/* Email */}
+              <input
+                type="email"
+                name="email"
+                value={values.email}
+                onChange={handleChange}
+                placeholder="Email: example@gmail.com"
+                className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+                required
+              />
+
+              {/* Password */}
               <div className="relative">
                 <input
                   type={passwordVisible ? "text" : "password"}
@@ -136,14 +165,13 @@ const Signup = () => {
                 </button>
               </div>
 
-              {/* Confirm Password Input */}
+              {/* Confirm Password */}
               <div className="relative">
                 <input
                   type={confirmPasswordVisible ? "text" : "password"}
                   name="confirmPassword"
                   value={values.confirmPassword}
                   onChange={handleChange}
-                  onBlur={handlePasswordValidation}
                   placeholder="Confirm Password"
                   className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 pr-12"
                   required
@@ -167,7 +195,7 @@ const Signup = () => {
               </button>
             </form>
 
-            {/* Link to Log In Page */}
+            {/* Redirect to Login */}
             <p className="text-center text-gray-600">
               Already have an account?{" "}
               <Link to="/login" className="text-purple-600 hover:underline">
@@ -177,14 +205,14 @@ const Signup = () => {
           </div>
         </div>
 
-        {/* Image/Side Component */}
+        {/* Side Image */}
         <AuthSideImage
           imageUrl="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1920&auto=format&fit=crop"
           overlayColor="bg-amber-50"
         />
       </div>
 
-      {/* Toast Messages */}
+      {/* Toasts */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </>
   );

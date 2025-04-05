@@ -1,15 +1,30 @@
+// ✅ Supabase-Integrated RequestResetPassword.jsx
 import React, { useState } from 'react';
-import { useToast } from '../hooks/useToast'; // Import useToast hook
-import ToastContainer from '../components/Toast/ToastContainer'; // Import ToastContainer
+import { useToast } from '../hooks/useToast';
+import ToastContainer from '../components/Toast/ToastContainer';
+import supabase from '../utils/supabase';
 
 const RequestResetPassword = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toasts, addToast, removeToast } = useToast(); // Get toasts and addToast
+  const { toasts, addToast, removeToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+      addToast("Password reset email sent! Check your inbox.", "success");
+    } catch (err) {
+      addToast(err.message || "Something went wrong.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,8 +51,6 @@ const RequestResetPassword = () => {
           </button>
         </form>
       </div>
-
-      {/* Add Toast Container to render toasts */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
