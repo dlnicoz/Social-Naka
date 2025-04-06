@@ -42,8 +42,10 @@ export default function Header() {
   const handleLogout = async () => {
         await logout();
         addToast('Sign-Out Successful!', 'success');
-        navigate('/login');
-  };
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+        };
   
   // Reset the dropdown auto-hide timer
   const resetDropdownTimer = () => {

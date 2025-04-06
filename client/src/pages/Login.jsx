@@ -37,7 +37,9 @@ const Login = () => {
       if (user) {
         setUser(user); // ✅ Update AuthContext state
         addToast('Google Sign-In Successful!', 'success');
-        // navigate('/dashboard');
+        setTimeout(() => {
+          navigate('/dashboard');
+        } , 1500)
       }
     } catch (err) {
       console.error("Google Sign-In Error:", err);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SocialCard from '../components/SocialCard';
 import categories from '../data/categoriesData';
@@ -8,11 +8,13 @@ import supabase from '../utils/supabase';
 const Explore = () => {
   const [users, setUsers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?.category || '');
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const firstRender = useRef(true);
 
-  const fetchSocialCards = async (searchQuery = '', category = '') => {
+  const searchQuery = searchParams.get('search') || '';
+
+  const fetchSocialCards = async (search = '', category = '') => {
     setLoading(true);
 
     try {
@@ -21,13 +23,9 @@ const Explore = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Filter by search (name, slug, profession)
-      if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,slug.ilike.%${searchQuery}%,profession.ilike.%${searchQuery}%`);
-      }
-
-      // Filter by category (via professions list)
-      if (category) {
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,slug.ilike.%${search}%,profession.ilike.%${search}%`);
+      } else if (category) {
         const cat = categories.find((c) => c.category === category);
         if (cat) {
           const professions = cat.professions;
@@ -52,7 +50,7 @@ const Explore = () => {
     }
   };
 
-  // On category or search query change
+  // Auto-fetch on either search or category
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
@@ -60,34 +58,39 @@ const Explore = () => {
       return;
     }
 
-    const searchQuery = searchParams.get('search') || '';
-
-    fetchSocialCards(searchQuery, selectedCategory);
+    fetchSocialCards(searchQuery, searchQuery ? '' : selectedCategory);
   }, [searchParams, selectedCategory]);
+
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    setSearchParams({}); // ❌ clear search if category clicked
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="mt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Category Filters */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex gap-3 overflow-x-auto pb-6 pt-2">
-            {categories.map((category) => (
-              <motion.button
-                key={category.category}
-                onClick={() => setSelectedCategory(category.category)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-                  selectedCategory === category.category
-                    ? 'bg-black text-white'
-                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                }`}
-              >
-                {category.category}
-              </motion.button>
-            ))}
+        {!searchQuery && (
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex gap-3 overflow-x-auto pb-6 pt-2">
+              {categories.map((category) => (
+                <motion.button
+                  key={category.category}
+                  onClick={() => handleCategoryClick(category.category)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+                    selectedCategory === category.category
+                      ? 'bg-black text-white'
+                      : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                  }`}
+                >
+                  {category.category}
+                </motion.button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Pinterest-style Grid */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
