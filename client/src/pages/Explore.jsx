@@ -1,56 +1,68 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import axios from 'axios';
 import { motion } from 'framer-motion';
-import SocialCard from '../components/SocialCard/index';
+import SocialCard from '../components/SocialCard';
 import categories from '../data/categoriesData';
+import supabase from '../utils/supabase';
 
 const Explore = () => {
   const [users, setUsers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?.category || '');
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
-  const firstRender = useRef(true); // Prevents useEffect from running on initial render
+  const firstRender = useRef(true);
 
-  // Function to fetch social cards based on search query and category
   const fetchSocialCards = async (searchQuery = '', category = '') => {
     setLoading(true);
+
     try {
-      const response = await axios.get(
-        `${apiUrl}/social-cards?search=${searchQuery}&category=${category}&limit=10`
-      );
-      // Filter out private cards
-      const publicCards = response.data.filter((card) => card.isPublic);
-      setUsers(publicCards);
-    } catch (error) {
-      console.error('Error fetching social cards:', error);
+      let query = supabase
+        .from('social_cards')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      // Filter by search (name, slug, profession)
+      if (searchQuery) {
+        query = query.or(`name.ilike.%${searchQuery}%,slug.ilike.%${searchQuery}%,profession.ilike.%${searchQuery}%`);
+      }
+
+      // Filter by category (via professions list)
+      if (category) {
+        const cat = categories.find((c) => c.category === category);
+        if (cat) {
+          const professions = cat.professions;
+          query = query.in('profession', professions);
+        }
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Supabase fetch error:', error.message);
+        setUsers([]);
+      } else {
+        setUsers(data || []);
+      }
+
+    } catch (err) {
+      console.error('Unexpected error:', err);
       setUsers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Effect to handle search query or category changes
+  // On category or search query change
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
+      fetchSocialCards('', selectedCategory);
       return;
     }
 
     const searchQuery = searchParams.get('search') || '';
 
-    if (searchQuery) {
-      if (selectedCategory !== '') {
-        setSelectedCategory(''); // Reset category when search query exists
-      }
-      fetchSocialCards(searchQuery, ''); // Fetch based on search query only
-    } else {
-      if (selectedCategory === '') {
-        setSelectedCategory(categories[0]?.category || ''); // Reset to first category when search is cleared
-      }
-      fetchSocialCards('', selectedCategory); // Fetch based on the selected category
-    }
+    fetchSocialCards(searchQuery, selectedCategory);
   }, [searchParams, selectedCategory]);
 
   return (
@@ -84,7 +96,7 @@ const Explore = () => {
               <div className="col-span-full text-center text-gray-600">Loading...</div>
             ) : users.length > 0 ? (
               users.map((user) => (
-                <div key={user._id || user.id} className="break-inside-avoid">
+                <div key={user.id} className="break-inside-avoid">
                   <SocialCard profile={user} />
                 </div>
               ))

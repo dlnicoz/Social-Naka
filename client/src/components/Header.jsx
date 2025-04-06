@@ -10,22 +10,17 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/Toast/ToastContainer';
 
-
-
-
-
 export default function Header() {
-    const { addToast, toasts, removeToast } = useToast();
-  const { user, setUser, logout, authLoading } = useAuth();
+  const { addToast, toasts, removeToast } = useToast();
+  const { user, logout, hasSocialCard, profileUrlName } = useAuth();
   const userUrl = user?.user_metadata?.userUrl || user?.user_metadata?.avatar_url;
   const userName = user?.user_metadata?.full_name || user?.email
   const isLoggedIn = !!user;
-  const profileUrlName = user?.profileUrlName;
+  // const profileUrlName = user?.profileUrlName;
 
 
   const [showDropdown, setShowDropdown] = useState(false); // Dropdown visibility
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu visibility
-  const [hasSocialCard, setHasSocialCard] = useState(false); // Social card existence
   const [isSearchVisible, setIsSearchVisible] = useState(false); // Toggle search visibility
   const [isSearchOpen, setIsSearchOpen] = useState(false); // Track search bar visibility state
   const location = useLocation(); // Current path
@@ -43,16 +38,13 @@ export default function Header() {
     navigate(`/explore?search=${value}`); // Update the Explore page URL with the search query
   };
 
-  // Fetch user info and check for social card
-
-
   // Handle logout
   const handleLogout = async () => {
-    addToast('Sign-Out Successful!', 'success');
-    await logout();
-    navigate('/login');
+        await logout();
+        addToast('Sign-Out Successful!', 'success');
+        navigate('/login');
   };
-
+  
   // Reset the dropdown auto-hide timer
   const resetDropdownTimer = () => {
     if (dropdownTimerRef.current) {
@@ -107,32 +99,44 @@ export default function Header() {
               <div className="hidden md:flex items-center gap-4">
                 {!isExplore && (
                   <>
-                    <Link
-                      to={isDashboard ? '/' : '/dashboard'}
-                      className={cn(
-                        'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
-                        'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      )}
-                    >
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        {isDashboard ? (
-                          <Home size={20} />
-                        ) : hasSocialCard ? (
-                          <Pencil size={20} />
-                        ) : (
-                          <BadgePlus size={20} />
+                    {isLoggedIn ? (
+                      <Link
+                        to={isDashboard ? '/' : '/dashboard'}
+                        className={cn(
+                          'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
+                          'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         )}
-                      </motion.div>
-                      <span className="font-medium">
-                        {isDashboard ? 'Home' : hasSocialCard ? 'Edit' : 'Create'}
-                      </span>
-                    </Link>
-
+                      >
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {isDashboard ? (
+                            <Home size={20} />
+                          ) : hasSocialCard ? (
+                            <Pencil size={20} />
+                          ) : (
+                            <BadgePlus size={20} />
+                          )}
+                        </motion.div>
+                        <span className="font-medium">
+                          {isDashboard ? 'Home' : hasSocialCard ? 'Edit' : 'Create'}
+                        </span>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => addToast('Kindly login to create a social card.', 'warning')}
+                        className={cn(
+                          'flex items-center gap-2 px-5 py-2.5 text-sm rounded-full transition-all duration-200',
+                          'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        )}
+                      >
+                        <BadgePlus size={20} />
+                        <span className="font-medium">Create</span>
+                      </button>
+                    )}
                     {hasSocialCard && (
                       <Link
                         target="_blank"
@@ -227,13 +231,26 @@ export default function Header() {
                             transition={{ duration: 0.3 }}
                             className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
                           >
-                            <Link
-                              to="/dashboard"
-                              onClick={() => setShowDropdown(false)}
-                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              Dashboard
-                            </Link>
+                            {isLoggedIn ? (
+                              <Link
+                                to="/dashboard"
+                                onClick={() => setShowDropdown(false)}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                Dashboard
+                              </Link>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setIsMobileMenuOpen(false);
+                                  addToast('Kindly login to create a social card.', 'warning');
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                              >
+                                <BadgePlus size={20} />
+                                <span>Create</span>
+                              </button>
+                            )}
                             <motion.button
                               whileTap={{ scale: 0.95 }}
                               onClick={handleLogout}

@@ -27,7 +27,7 @@ function CreateSocialCard() {
   const [isValid, setIsValid] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user , setHasSocialCard  } = useAuth();
 
   const shareableLink = formData.slug ? `${window.location.origin}/user/${formData.slug}` : '';
 
@@ -49,10 +49,12 @@ function CreateSocialCard() {
         if (error || !data) {
           console.log('No social card found.');
           setIsNewCard(true);
+          setHasSocialCard(false)
         } else {
           setFormData(data);
           setPrevSlug(data.slug); // <- Save original slug
           setIsNewCard(false);
+          setHasSocialCard(true)
         }
       } catch (error) {
         setError('Error fetching social card.');
@@ -123,6 +125,7 @@ function CreateSocialCard() {
 
       addToast('Social Card Saved Successfully!', 'success');
       setIsNewCard(false);
+      setHasSocialCard(true);
       setFormData(response.data);
       navigate(`/user/${response.data.slug}`);
     } catch (error) {
