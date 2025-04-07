@@ -18,7 +18,7 @@ const Login = () => {
 
 
   const { addToast, toasts, removeToast } = useToast();
-  const { user, setUser, login, signInWithGoogle } = useAuth(); // ✅ Ensure useAuth() is inside AuthProvider
+  const { user, setUser, login, signInWithGoogle } = useAuth(); 
   console.log(user); // Debugging Purpose  
 
 
@@ -35,7 +35,7 @@ const Login = () => {
 
       const user = data?.user;
       if (user) {
-        setUser(user); // ✅ Update AuthContext state
+        setUser(user); 
         addToast('Google Sign-In Successful!', 'success');
         setTimeout(() => {
           navigate('/dashboard');
@@ -72,7 +72,6 @@ const Login = () => {
 
     checkUser();
   }, []);
-
   return (
     <>
       <div className="flex xl:flex-row relative">
@@ -83,15 +82,12 @@ const Login = () => {
               <img src={SocialIcon} alt="Social Icon" className="h-6 w-6 sm:h-8 sm:w-8 ml-2" />
             </span>
           </Link>
-
         </div>
         <div className="relative flex w-full lg:py-[var(--lg)] lg:px-4 xl:p-8 xl:pb-4 xl:w-[calc(100vw-52%)] min-h-screen justify-center">
           <div className="w-full max-w-md space-y-8 pt-32">
             <h1 className="text-5xl font-black">Log in to your SocialNaka</h1>
-
             {/* Google Sign-In */}
             <GoogleButton text="Sign in with Google" ClickFun={handleGoogleSignIn} />
-
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -100,7 +96,6 @@ const Login = () => {
                 <span className="px-2 bg-white text-gray-500">Or continue with</span>
               </div>
             </div>
-
             {/* Normal Login Form */}
             <form className="space-y-4" onSubmit={handleSubmit}>
               <input
@@ -112,7 +107,6 @@ const Login = () => {
                 className="w-full px-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
                 required
               />
-
               <div className="relative">
                 <input
                   type={passwordVisible ? "text" : "password"}
@@ -131,7 +125,6 @@ const Login = () => {
                   <Eye className="text-gray-400" size={20} />
                 </button>
               </div>
-
               <button
                 type="submit"
                 className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isSubmitting ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200'}`}
@@ -139,20 +132,16 @@ const Login = () => {
                 {isSubmitting ? 'Logging in...' : 'Log in'}
               </button>
             </form>
-
             <p className="text-center text-gray-600">
               Forgot your password? <Link to="/request-reset" className="text-blue-600 hover:underline">Reset Password</Link>
             </p>
-
             <p className="!mt-2 text-center text-gray-600">
               Don't have an account? <Link to="/signup" className="text-purple-600 hover:underline">Sign up</Link>
             </p>
           </div>
         </div>
-
         <AuthSideImage imageUrl="https://images.unsplash.com/photo-1614786269829-d24616faf56d?q=80&w=1920&auto=format&fit=crop" overlayColor="bg-purple-100" />
       </div>
-
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </>
   );

@@ -67,7 +67,8 @@ const Signup = () => {
         email: values.email,
         password: values.password,
         options: {
-          data: { name: values.name },
+          data: { 
+            full_name: values.name,           },
         },
       });
 

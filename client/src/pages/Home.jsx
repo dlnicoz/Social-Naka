@@ -1,6 +1,5 @@
 import React, { useState, useEffect , useContext } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Instagram, Youtube, Twitter, BarChart, Smartphone, Palette, Link as LinkIcon } from 'lucide-react';
 // import CategorySlider from '../components/CategorySlider';
@@ -10,8 +9,6 @@ import { cn } from '../lib/utils';
 // import AuthContext  from '../context/AuthContext'; 
 
 function Home() {
-  // const { user } = useContext(AuthContext); // Get authentication state
-  // const [users, setUsers] = useState([]);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
