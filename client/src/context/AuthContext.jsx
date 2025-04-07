@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut({scope:'local'});
       if (error) throw error;
     } catch (err) {
       console.error("Logout Error:", err.message); // don't block UI
